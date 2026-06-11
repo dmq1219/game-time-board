@@ -1,4 +1,4 @@
-const CACHE_NAME = "game-time-board-web-v3";
+const CACHE_NAME = "game-time-board-web-v4";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 const INDEX_URL = new URL("./index.html", self.registration.scope).href;
 self.addEventListener("install", (event) => {
