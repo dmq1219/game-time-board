@@ -160,6 +160,151 @@ main {
   padding-top: 22px;
 }
 
+.promise-screen {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: clamp(12px, 2vw, 24px);
+}
+
+.promise-board {
+  width: min(100%, 1180px);
+  border: 1px solid var(--line);
+  border-top: 14px solid var(--primary);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f2f7ff 0%, var(--surface) 42%, #fffaf0 100%);
+  padding: clamp(14px, 2vw, 24px);
+  box-shadow: 0 16px 36px rgba(31, 41, 55, 0.12);
+}
+
+.promise-heading,
+.promise-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.promise-heading {
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 12px;
+}
+
+.promise-heading h1 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 54px);
+  line-height: 0.95;
+}
+
+.promise-countdown {
+  display: grid;
+  width: clamp(72px, 8vw, 96px);
+  height: clamp(72px, 8vw, 96px);
+  place-items: center;
+  border: 3px solid var(--primary);
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: clamp(32px, 4vw, 50px);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.promise-countdown.ready {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--success);
+  font-size: clamp(20px, 2.5vw, 30px);
+}
+
+.promise-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 20px);
+  margin: clamp(12px, 2vw, 20px) 0;
+}
+
+.promise-card {
+  min-height: 0;
+  border: 1px solid var(--line);
+  border-left: 10px solid var(--promise-accent, var(--primary));
+  border-radius: 8px;
+  background: var(--surface);
+  padding: clamp(14px, 2vw, 24px);
+}
+
+.promise-card-cn {
+  --promise-accent: #ff6b4a;
+}
+
+.promise-card-en {
+  --promise-accent: #38a3ff;
+}
+
+.promise-card h2 {
+  margin: 0 0 12px;
+  font-size: clamp(24px, 3vw, 40px);
+  line-height: 1;
+}
+
+.promise-card p {
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-size: clamp(16px, 1.65vw, 22px);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.promise-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.promise-card li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  font-size: clamp(16px, 1.65vw, 22px);
+  line-height: 1.2;
+}
+
+.promise-card li span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--success-soft);
+  color: var(--success);
+  font-weight: 950;
+}
+
+.promise-note {
+  margin-top: 16px !important;
+  color: var(--promise-accent, var(--primary)) !important;
+}
+
+.promise-actions {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.promise-actions span {
+  color: var(--muted);
+  font-size: clamp(16px, 1.8vw, 22px);
+  font-weight: 900;
+}
+
+.promise-actions button {
+  min-width: clamp(180px, 22vw, 280px);
+  min-height: clamp(48px, 5vw, 60px);
+  font-size: clamp(19px, 2.2vw, 28px);
+}
+
 .page {
   min-height: calc(100vh - 138px);
 }
@@ -284,12 +429,12 @@ main {
 
 .check-row {
   display: grid;
-  min-height: clamp(30px, 3vw, 40px);
-  grid-template-columns: clamp(24px, 2.7vw, 32px) minmax(0, 1fr);
+  min-height: clamp(38px, 4vw, 48px);
+  grid-template-columns: clamp(24px, 2.7vw, 32px) clamp(42px, 4.2vw, 54px) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(8px, 1vw, 12px);
+  gap: clamp(6px, 0.8vw, 10px);
   border-bottom: 1px solid var(--line);
-  padding-bottom: 6px;
+  padding-bottom: 5px;
   font-size: clamp(14px, 1.15vw, 17px);
   font-weight: 700;
 }
@@ -299,8 +444,68 @@ main {
   color: var(--ink);
 }
 
-.check-row span {
+.check-text {
   overflow-wrap: anywhere;
+}
+
+.task-visual {
+  --task-main: var(--accent);
+  --task-soft: var(--accent-soft);
+  --task-ink: #243244;
+  display: grid;
+  width: clamp(42px, 4.2vw, 54px);
+  height: clamp(31px, 3.2vw, 40px);
+  place-items: center;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.task-visual svg {
+  width: 92%;
+  height: 92%;
+}
+
+.task-fill-main {
+  fill: var(--task-main);
+  opacity: 0.78;
+}
+
+.task-fill-soft {
+  fill: var(--task-soft);
+}
+
+.task-line,
+.task-arrow {
+  fill: none;
+  stroke: var(--task-ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.task-line-check {
+  fill: none;
+  stroke: var(--success);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+}
+
+.task-dot {
+  fill: var(--warning);
+  stroke: var(--task-ink);
+  stroke-width: 4;
+}
+
+.task-visual.done {
+  border-color: var(--success);
+  background: var(--success-soft);
+}
+
+.task-visual.done .task-fill-main {
+  fill: var(--success);
+  opacity: 0.8;
 }
 
 .locked-timer,
@@ -404,9 +609,21 @@ main {
 }
 
 .child-card.timer-ready .check-row {
-  min-height: 28px;
+  min-height: 30px;
+  grid-template-columns: 22px 34px minmax(0, 1fr);
   padding-bottom: 2px;
   font-size: clamp(13px, 1vw, 15px);
+}
+
+.child-card.timer-ready .task-visual {
+  width: 34px;
+  height: 25px;
+  border-radius: 6px;
+}
+
+.child-card.timer-ready .task-line,
+.child-card.timer-ready .task-arrow {
+  stroke-width: 5;
 }
 
 .child-card.timer-ready .timer-panel {
@@ -673,6 +890,14 @@ main {
 }
 
 @media (max-width: 900px) {
+  .promise-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .promise-card {
+    min-height: auto;
+  }
+
   .settings-grid {
     grid-template-columns: 1fr;
   }
@@ -690,6 +915,17 @@ main {
   .topbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .promise-heading,
+  .promise-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .promise-countdown {
+    width: 88px;
+    height: 88px;
   }
 
   .nav-tabs {

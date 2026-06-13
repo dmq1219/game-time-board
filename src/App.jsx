@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import AppShell from "./components/AppShell";
+import FamilyPromiseGate from "./components/FamilyPromiseGate";
 import TodayDashboard from "./components/TodayDashboard";
 import TimerPage from "./components/TimerPage";
 import RulesPage from "./components/RulesPage";
@@ -15,6 +16,7 @@ function normalizeStatus(status, length) {
 
 export default function App() {
   const [activePage, setActivePage] = useState("today");
+  const [hasReadPromise, setHasReadPromise] = useState(false);
   const [children, setChildren] = useLocalStorage("gameTimeBoard.children", DEFAULT_CHILDREN);
   const [dailyRecords, setDailyRecords] = useLocalStorage("gameTimeBoard.dailyRecords", []);
   const [settings, setSettings] = useLocalStorage("gameTimeBoard.settings", DEFAULT_SETTINGS);
@@ -79,6 +81,10 @@ export default function App() {
     },
     [buildRecord, childrenById, setDailyRecords]
   );
+
+  if (!hasReadPromise) {
+    return <FamilyPromiseGate onStart={() => setHasReadPromise(true)} />;
+  }
 
   return (
     <AppShell activePage={activePage} onPageChange={setActivePage}>
