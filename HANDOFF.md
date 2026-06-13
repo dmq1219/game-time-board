@@ -176,6 +176,7 @@ git remote -v
 ```bash
 git ls-remote --heads origin
 # fecb768fcb2c3e2195da41269dc4a7a37d47efc5 refs/heads/main
+# 1aa74ebab547e423a3efc0c15da8fa22bc8653fd refs/heads/source-main
 ```
 
 临时浅克隆远程 `main` 后发现，远程仓库当前只包含部署后的静态文件：
@@ -187,8 +188,8 @@ manifest.webmanifest
 sw.js
 ```
 
-重要结论：**当前 GitHub 远程仓库不能完整恢复本地 React/Vite 源码。**  
-如果只在新电脑执行 `git clone`，拿到的是线上部署文件，不是完整开发工程。
+重要结论：远程 `main` 是线上静态部署分支，远程 `source-main` 是完整 React/Vite 源码分支。  
+在新电脑恢复开发环境时，需要 clone 后切换到 `source-main`。
 
 ### .gitignore
 
@@ -263,21 +264,9 @@ http://localhost:5173/
 npm run dev -- --host 127.0.0.1 --port 4174
 ```
 
-### 推荐路线 B：先把完整源码推送到 GitHub，再在新电脑 clone
+### 推荐路线 B：从 GitHub 源码分支恢复
 
-当前远程只有静态部署文件，因此建议在旧电脑上先提交并推送一个源码分支，例如 `source-main`。
-
-旧电脑上执行：
-
-```bash
-git switch public-main
-git add public/sw.js src/App.jsx src/components/Checklist.jsx src/components/FamilyPromiseGate.jsx src/components/TaskIllustration.jsx src/styles.css
-git commit -m "Add promise gate and visual checklist source"
-git branch source-main
-git push origin source-main
-```
-
-注意：当前这台电脑之前 HTTPS/SSH 推送认证不稳定。推送前需要确认 GitHub 认证可用。敏感 token 不要写入文件，只在 GitHub CLI、系统钥匙串或 Git 凭据管理器中配置。
+当前完整源码已经上传到远程 `source-main` 分支。
 
 新电脑上 clone：
 
@@ -285,6 +274,15 @@ git push origin source-main
 git clone https://github.com/dmq1219/game-time-board.git
 cd game-time-board
 git switch source-main
+npm ci
+npm run dev
+```
+
+如果 `git switch source-main` 提示本地分支不存在，可执行：
+
+```bash
+git fetch origin source-main
+git switch --track origin/source-main
 npm ci
 npm run dev
 ```
@@ -455,12 +453,11 @@ touch .env
 
 ### 已知问题 / 未完成任务
 
-1. 本地源码改动尚未提交到 Git。
-2. 远程 GitHub 仓库 `main` 只有静态部署文件，不包含完整源码。
-3. GitHub Pages 线上版本和本地源码历史不同步。
-4. 当前没有自动化测试。
-5. 当前有导出 JSON/CSV，但没有导入功能。
-6. iPad PWA 更新时可能受 service worker 缓存影响；若看到旧版本，需要联网后完全退出再打开一次。
+1. 远程 GitHub 仓库 `main` 只有静态部署文件；完整源码在 `source-main`。
+2. GitHub Pages 线上版本和本地源码历史不同步。
+3. 当前没有自动化测试。
+4. 当前有导出 JSON/CSV，但没有导入功能。
+5. iPad PWA 更新时可能受 service worker 缓存影响；若看到旧版本，需要联网后完全退出再打开一次。
 
 ## 5. 不在 Git 中需单独传输的文件
 
@@ -518,14 +515,14 @@ manifest.webmanifest
 sw.js
 ```
 
-这意味着直接 `git clone` 不能恢复完整开发环境。迁移前必须：
+这意味着只 clone 默认 `main` 不能恢复完整开发环境。迁移时必须：
 
-- 复制本地源码目录；或
-- 提交并推送完整源码分支。
+- clone 后切换到 `source-main`；或
+- 复制本地源码目录。
 
-### 风险 2：本地源码有未提交改动
+### 风险 2：本机可能有临时文件
 
-当前未提交改动包含最新功能。如果只迁移 Git 历史而不迁移工作区文件，这些功能会丢失。
+最新源码功能已提交并推送到远程 `source-main`。当前本机可能仍有编辑器临时文件，例如 `.HANDOFF.md.swp`，这类文件不需要迁移或上传。
 
 迁移前建议至少执行：
 
