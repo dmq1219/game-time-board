@@ -3,17 +3,17 @@ import React, { useEffect, useState } from "react";
 const COUNTDOWN_SECONDS = 20;
 
 const CHINESE_PROMISES = [
-  "照顾好自己的物品",
-  "尊重家人和朋友",
-  "保持礼貌和积极态度",
-  "完成属于自己的责任"
+  "做好自己卫生：刷牙、洗脸、梳头",
+  "尊重每个兄弟姐妹",
+  "用完东西物归原位",
+  "按时归还电子设备"
 ];
 
 const ENGLISH_PROMISES = [
-  "Take care of my belongings",
-  "Be respectful to family and friends",
-  "Stay positive and polite",
-  "Complete my responsibilities"
+  "Take care of my hygiene: brush teeth, wash face, comb hair",
+  "Respect each of my brothers and sisters",
+  "Put things back where they belong after use",
+  "Return electronic devices on time"
 ];
 
 export default function FamilyPromiseGate({ onStart }) {
@@ -36,7 +36,10 @@ export default function FamilyPromiseGate({ onStart }) {
         <div className="promise-heading">
           <div>
             <p className="eyebrow">Before checklist</p>
-            <h1 id="promise-title">家庭团队承诺</h1>
+            <h1 id="promise-title">
+              家庭团队承诺
+              <span className="promise-title-en">Family Team Promise</span>
+            </h1>
           </div>
           <div className={canStart ? "promise-countdown ready" : "promise-countdown"}>
             {canStart ? "Ready" : secondsLeft}
@@ -45,7 +48,6 @@ export default function FamilyPromiseGate({ onStart }) {
 
         <div className="promise-columns">
           <article className="promise-card promise-card-cn" lang="zh-CN">
-            <h2>家庭团队承诺</h2>
             <p>我是家庭团队的一员。今天我会：</p>
             <ul>
               {CHINESE_PROMISES.map((item) => (
@@ -59,7 +61,6 @@ export default function FamilyPromiseGate({ onStart }) {
           </article>
 
           <article className="promise-card promise-card-en" lang="en">
-            <h2>Family Team Promise</h2>
             <p>I am an important member of my family team.</p>
             <p>Today I will:</p>
             <ul>

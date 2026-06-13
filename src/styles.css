@@ -196,6 +196,15 @@ main {
   line-height: 0.95;
 }
 
+.promise-title-en {
+  display: block;
+  margin-top: 8px;
+  font-size: clamp(16px, 1.8vw, 26px);
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: 0.4px;
+}
+
 .promise-countdown {
   display: grid;
   width: clamp(72px, 8vw, 96px);
