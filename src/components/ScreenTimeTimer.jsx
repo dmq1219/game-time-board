@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useCountdown } from "../hooks/useCountdown";
 import { startAlarm, unlockAudio } from "../utils/sound";
+import { releaseWakeLock, requestWakeLock } from "../utils/wakeLock";
 
 function formatSeconds(seconds) {
   const safeSeconds = Math.max(0, Number(seconds) || 0);
@@ -70,6 +71,7 @@ export default function ScreenTimeTimer({ record, defaultMinutes, updateRecord }
 
   function startTimer() {
     unlockAudio();
+    requestWakeLock();
     const secondsToUse =
       record.timerStatus === "paused"
         ? displaySeconds
@@ -86,6 +88,7 @@ export default function ScreenTimeTimer({ record, defaultMinutes, updateRecord }
   }
 
   function pauseTimer() {
+    releaseWakeLock();
     updateRecord((current) => ({
       ...current,
       timerStatus: "paused",
@@ -95,6 +98,7 @@ export default function ScreenTimeTimer({ record, defaultMinutes, updateRecord }
   }
 
   function resetTimer() {
+    releaseWakeLock();
     const minutes = Number(minutesDraft) || defaultMinutes;
     updateRecord((current) => ({
       ...current,

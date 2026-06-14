@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useCountdown } from "../hooks/useCountdown";
 import { startAlarm, stopAlarm, unlockAudio } from "../utils/sound";
+import { releaseWakeLock, requestWakeLock } from "../utils/wakeLock";
 
 const TIMER_OPTIONS = [30, 60, 90];
 
@@ -56,10 +57,12 @@ export default function TimerPage() {
       remainingSeconds: minutes * 60
     });
     stopAlarm();
+    releaseWakeLock();
   }
 
   function startTimer() {
     unlockAudio();
+    requestWakeLock();
     const secondsToUse = timerState.status === "paused" ? displaySeconds : selectedMinutes * 60;
     setTimerState({
       status: "running",
@@ -69,6 +72,7 @@ export default function TimerPage() {
   }
 
   function pauseTimer() {
+    releaseWakeLock();
     setTimerState({
       status: "paused",
       endAt: null,
@@ -78,6 +82,7 @@ export default function TimerPage() {
 
   function resetTimer() {
     stopAlarm();
+    releaseWakeLock();
     setTimerState({
       status: "idle",
       endAt: null,
@@ -87,6 +92,7 @@ export default function TimerPage() {
 
   function acknowledgeReturn() {
     stopAlarm();
+    releaseWakeLock();
     setTimerState((current) => ({
       ...current,
       status: "done",

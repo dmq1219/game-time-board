@@ -1,5 +1,6 @@
 import React from "react";
 import { stopAlarm } from "../utils/sound";
+import { releaseWakeLock } from "../utils/wakeLock";
 
 export default function DeviceReturnStatus({ record, updateRecord }) {
   const needsReturn = record.timerStatus === "expired" && !record.deviceReturned;
@@ -13,6 +14,7 @@ export default function DeviceReturnStatus({ record, updateRecord }) {
 
   function confirmReturned() {
     stopAlarm();
+    releaseWakeLock();
     updateRecord((current) => ({
       ...current,
       deviceReturned: true,
