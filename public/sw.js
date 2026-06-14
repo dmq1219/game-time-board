@@ -1,4 +1,4 @@
-const CACHE_NAME = "game-time-board-v8";
+const CACHE_NAME = "game-time-board-v9";
 const APP_SHELL = [
   "./",
   "./index.html",
