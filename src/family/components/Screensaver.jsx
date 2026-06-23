@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { formatClock, formatLongDate } from "../utils/calendar";
+import { formatClock, formatLongDate, formatTime } from "../utils/calendar";
+import { memberById } from "../data/familyData";
 
-// Mock "photos" — gradient slides so the prototype works fully offline.
-// Drop real <img> sources into SLIDES (e.g. /photos/01.jpg) to use family pictures.
-const SLIDES = [
-  { bg: "linear-gradient(135deg,#ff9a9e,#fad0c4)", caption: "Beach day, last summer ☀️" },
-  { bg: "linear-gradient(135deg,#a1c4fd,#c2e9fb)", caption: "First day of school 🎒" },
-  { bg: "linear-gradient(135deg,#84fab0,#8fd3f4)", caption: "Grandma's birthday 🎂" },
-  { bg: "linear-gradient(135deg,#fbc2eb,#a6c1ee)", caption: "Snow trip ❄️" },
-  { bg: "linear-gradient(135deg,#ffecd2,#fcb69f)", caption: "Soccer champions ⚽" }
-];
-
-export default function Screensaver({ now, onWake }) {
+// Full-screen digital photo frame. Auto-rotates the family photo list and
+// overlays the time, date, and the next important event. Tap anywhere to exit.
+export default function Screensaver({ now, photos, members, nextEvt, onWake }) {
   const [index, setIndex] = useState(0);
   const { time, period } = formatClock(now);
 
+  // Favorites first, then the rest; fall back to a gradient if empty.
+  const ordered = [...photos].sort((a, b) => Number(b.favorite) - Number(a.favorite));
+  const count = ordered.length;
+
   useEffect(() => {
-    const id = setInterval(() => setIndex((i) => (i + 1) % SLIDES.length), 8000);
+    if (count <= 1) return undefined;
+    const id = setInterval(() => setIndex((i) => (i + 1) % count), 8000);
     return () => clearInterval(id);
-  }, []);
+  }, [count]);
+
+  const safeIndex = count ? index % count : 0;
+  const member = nextEvt ? memberById(members, nextEvt.memberId) : null;
 
   return (
     <div
@@ -29,20 +30,41 @@ export default function Screensaver({ now, onWake }) {
       onClick={onWake}
       onTouchStart={onWake}
     >
-      {SLIDES.map((slide, i) => (
+      {count === 0 && <div className="fh-slide active fh-slide-fallback" />}
+      {ordered.map((p, i) => (
         <div
-          key={i}
-          className={`fh-slide${i === index ? " active" : ""}`}
-          style={{ background: slide.bg }}
+          key={p.id}
+          className={`fh-slide${i === safeIndex ? " active" : ""}`}
+          style={{ backgroundImage: `url(${p.src})` }}
         />
       ))}
+
+      <div className="fh-saver-scrim" />
+
       <div className="fh-saver-overlay">
         <div className="fh-saver-clock">
           <span className="fh-saver-time">{time}</span>
           <span className="fh-saver-period">{period}</span>
         </div>
         <p className="fh-saver-date">{formatLongDate(now)}</p>
-        <p className="fh-saver-caption">{SLIDES[index].caption}</p>
+
+        {nextEvt && (
+          <div className="fh-saver-next">
+            <span className="fh-saver-next-label">Next up · 下一件事</span>
+            <div className="fh-saver-next-row">
+              <span
+                className="fh-saver-dot"
+                style={{ background: member?.color ?? "#fff" }}
+              />
+              <strong>{nextEvt.title}</strong>
+              <em>
+                {nextEvt.allDay ? "All day" : formatTime(nextEvt.start)}
+                {member ? ` · ${member.name}` : ""}
+              </em>
+            </div>
+          </div>
+        )}
+
         <p className="fh-saver-hint">Tap anywhere to return · 轻触返回</p>
       </div>
     </div>

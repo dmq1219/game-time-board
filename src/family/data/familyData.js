@@ -111,17 +111,78 @@ function buildGrocery() {
   ];
 }
 
+// A meal slot holds a dish name, free-text notes, and ingredients that can be
+// pushed to the grocery list.
+const slot = (name = "", ingredients = [], notes = "") => ({ name, notes, ingredients });
+
 function buildMeals() {
-  // One dinner per weekday, keyed by weekday index (0 = Sun).
+  // Breakfast / lunch / dinner per weekday, keyed by weekday index (0 = Sun).
   return [
-    { day: 0, label: "Sun", meal: "Roast chicken" },
-    { day: 1, label: "Mon", meal: "Spaghetti" },
-    { day: 2, label: "Tue", meal: "Taco night" },
-    { day: 3, label: "Wed", meal: "Stir-fry & rice" },
-    { day: 4, label: "Thu", meal: "Veggie soup" },
-    { day: 5, label: "Fri", meal: "Homemade pizza" },
-    { day: 6, label: "Sat", meal: "BBQ burgers" }
+    {
+      day: 0,
+      label: "Sun",
+      breakfast: slot("Pancakes", ["Flour", "Maple syrup"]),
+      lunch: slot("Grilled cheese"),
+      dinner: slot("Roast chicken", ["Whole chicken", "Potatoes", "Carrots"])
+    },
+    {
+      day: 1,
+      label: "Mon",
+      breakfast: slot("Oatmeal & berries", ["Oats", "Blueberries"]),
+      lunch: slot("Turkey sandwich"),
+      dinner: slot("Spaghetti", ["Pasta", "Tomato sauce", "Ground beef"])
+    },
+    {
+      day: 2,
+      label: "Tue",
+      breakfast: slot("Yogurt parfait"),
+      lunch: slot("Leftover spaghetti"),
+      dinner: slot("Taco night", ["Tortillas", "Cheese", "Lettuce", "Salsa"])
+    },
+    {
+      day: 3,
+      label: "Wed",
+      breakfast: slot("Scrambled eggs", ["Eggs"]),
+      lunch: slot("Pasta salad"),
+      dinner: slot("Stir-fry & rice", ["Rice", "Broccoli", "Soy sauce"])
+    },
+    {
+      day: 4,
+      label: "Thu",
+      breakfast: slot("Cereal"),
+      lunch: slot("Ham wrap"),
+      dinner: slot("Veggie soup", ["Carrots", "Celery", "Onion"])
+    },
+    {
+      day: 5,
+      label: "Fri",
+      breakfast: slot("Toast & jam"),
+      lunch: slot("Mac & cheese"),
+      dinner: slot("Homemade pizza", ["Pizza dough", "Mozzarella", "Pepperoni"])
+    },
+    {
+      day: 6,
+      label: "Sat",
+      breakfast: slot("Waffles", ["Waffle mix"]),
+      lunch: slot("Hot dogs"),
+      dinner: slot("BBQ burgers", ["Buns", "Ground beef", "Cheddar"])
+    }
   ];
+}
+
+// Sample photos shipped in /public/photos. BASE_URL keeps paths correct in
+// both dev (/) and the built site (./).
+const PHOTO_BASE = import.meta.env.BASE_URL;
+export const SAMPLE_PHOTOS = [
+  { id: "sample-1", src: `${PHOTO_BASE}photos/sample-1.svg`, name: "Sunset Hills", favorite: true, sample: true },
+  { id: "sample-2", src: `${PHOTO_BASE}photos/sample-2.svg`, name: "Beach Day", favorite: false, sample: true },
+  { id: "sample-3", src: `${PHOTO_BASE}photos/sample-3.svg`, name: "Snow Trip", favorite: false, sample: true },
+  { id: "sample-4", src: `${PHOTO_BASE}photos/sample-4.svg`, name: "Park Picnic", favorite: false, sample: true },
+  { id: "sample-5", src: `${PHOTO_BASE}photos/sample-5.svg`, name: "Birthday Party", favorite: true, sample: true }
+];
+
+function buildPhotos() {
+  return SAMPLE_PHOTOS.map((p) => ({ ...p }));
 }
 
 // Stars redeemed for screen time, per member (starts at 0).
@@ -139,7 +200,8 @@ export function buildSeedData() {
     todos: buildTodos(),
     grocery: buildGrocery(),
     meals: buildMeals(),
-    rewards: buildRewards()
+    rewards: buildRewards(),
+    photos: buildPhotos()
   };
 }
 

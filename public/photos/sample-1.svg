@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff9a6b"/>
+      <stop offset="0.55" stop-color="#ffcf8e"/>
+      <stop offset="1" stop-color="#ffe9c2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+  <circle cx="800" cy="560" r="150" fill="#ff7e5f" opacity="0.85"/>
+  <path d="M0 720 L380 520 L720 700 L1040 500 L1340 690 L1600 560 L1600 1000 L0 1000 Z" fill="#c66b4e" opacity="0.55"/>
+  <path d="M0 820 L320 700 L640 810 L980 690 L1300 800 L1600 720 L1600 1000 L0 1000 Z" fill="#8c4a37" opacity="0.65"/>
+  <text x="60" y="940" font-family="Inter, sans-serif" font-size="44" font-weight="800" fill="#ffffff" opacity="0.85">Sunset Hills</text>
+</svg>

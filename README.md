@@ -49,24 +49,62 @@ npm run dev
 - **状态/存储**：React state + `localStorage`（复用现有 `src/hooks/useLocalStorage.js`）。
 - **样式**：原生 CSS（`src/family/styles.css`），大字号、强对比、儿童可读，不依赖 UI 库。
 
-## 功能
+## 页面结构
 
-- **顶部栏**：家庭名称、今天日期、实时时钟、天气（mock）。
+顶部栏（家庭名称、日期、实时时钟、mock 天气）+ 导航条（**Dashboard / Meal Plan / Import / Photos** 四页 + 永远可见的「下一条重要事件」），下面切换四个页面。
+
+### Dashboard 首页（一眼看全）
+
 - **左侧日历**：Today / Week / Month 三视图切换，可前后翻页、回到今天。
   - Today = 6:00–22:00 时间轴，事件按成员颜色排布并自动处理重叠分栏。
   - Week = 7 天分栏，每天列出彩色事件条。
   - Month = 整月网格，每格显示彩色事件块。
 - **右侧成员栏**：每位家庭成员今天的安排，按各自颜色区分。
 - **添加 / 编辑事件弹窗**：标题、分配成员（彩色选择）、日期、全天、起止时间、地点；可删除。点击日历空白处或成员旁的 `+` 也能快速新建。
-- **下方面板**：
-  - **Chores 家务**：勾选完成即给对应成员加星。
-  - **To-Do 待办** / **Grocery 采购**：可勾选、增删。
-  - **Meal Plan 餐食**：一周晚餐，点一下即可修改。
-  - **Rewards 星星奖励**：每个孩子的可用星星，`5⭐ = 30 分钟` 兑换 screen time（兑换比例见 `src/family/data/familyData.js` 的 `REWARD_RATE`）。
-- **Photo Screensaver 照片屏保**：闲置 **3 分钟**（可配）后进入，显示大时钟 + 轮播照片，**轻触任意处返回**。也可点底部 **Photo mode** 立即进入演示。
-- 底部还有 **Rename family**（改家庭名）和 **Reset demo**（重置 mock 数据）。
+- **下方面板**：Chores（勾选完成给成员加星）、To-Do、Grocery、Meals（今晚 + 明早 + 待购数量）、Rewards。
+- 首页一眼可见：今天安排、本周/本月日历、今天晚餐、家务任务、奖励星星、**下一条重要事件**（顶部 Next up）。
 
-> Mock 数据每次首次加载会以「今天」为基准生成，所以日历永远是满的。真实照片：把图片放进 `public/` 并在 `src/family/components/Screensaver.jsx` 的 `SLIDES` 里改成 `<img>` 即可。
+### 三个核心模块
+
+**1) Photo Screensaver 照片屏保** — 闲置 **3 分钟**（`settings.screensaverMinutes` 可配）后自动进入电子相框：全屏轮播照片、大时钟、今天日期、**下一条重要事件**；**轻触任意处返回**。
+- **Photos 管理页**：上传（多选，自动压缩到 ≤1280px 存进 localStorage）、收藏 ★（收藏优先轮播）、删除、立即预览屏保。
+- 第一版自带 `/public/photos/` 5 张示例图；上传的照片存在 `familyHub.photos`。
+
+**2) Meal Planning 每周餐食** — `Meal Plan` 页按 Monday–Sunday × Breakfast / Lunch / Dinner 展示，每格点开可编辑菜名、备注、食材。
+- **自动生成 Grocery List**：每个 meal 的食材可一键「Add to shopping list」，自动去重并带来源标签（如 `Tue · Dinner`）；也能手动增删。Grocery 支持 checkbox。
+- 首页显示：今天晚餐、明天早餐、本周还未购买的食材数量。
+
+**3) Magic Import 邮件 / PDF 转日历** — `Import` 页把学校邮件 / 通知转成**待确认**日历事件，详见下方「Magic Import：现状与升级路径」。
+
+- **Rewards 星星奖励**：完成家务累计星星，`5⭐ = 30 分钟` 兑换 screen time（比例见 `src/family/data/familyData.js` 的 `REWARD_RATE`）。
+- 底部还有 **Rename family**、**Photo mode**（立即进屏保）、**Reset demo**（重置 mock 数据）。
+
+> Mock 数据每次首次加载以「今天」为基准生成，所以日历永远是满的。
+
+## Magic Import：现状与升级路径
+
+把邮件 / 通知文本「粘贴 → 解析 → 审核 → 批准」后才写入日历，避免脏数据直接进日程。
+
+**v1 现在能做：**
+- **Paste email text**（已实现）：纯前端规则解析器（`src/family/data/parsers.js`）提取 event title / date / start / end / location / child / notes，支持「March 12, 2026」「3/20」「Friday」「tomorrow」等日期与「9:00 AM to 2:30 PM」时间区间，可识别家庭成员名字。
+- **Review 审核页**：每条识别结果都可 **edit / 分配成员（即换颜色）/ approve / reject**，点 approve 才写入本地 calendar events。
+- **Duplicate detection**：同一天 + 同标题 + 同开始时间，会提示 **"Possible duplicate"**。
+- **Upload PDF / Upload image**：第一版是占位（显示「parsing coming soon」），但 parser adapter 已按统一契约接好（`PARSERS.pdf` / `PARSERS.image`）。
+
+**v1 当前限制：**
+- 不接 Gmail、不做真正的邮件转发；只处理你**手动粘贴**的文本。
+- 规则解析对非常见措辞、跨行事件、相对日期（如「下周三」中文）覆盖有限；过去的裸日期会顺延到明年。
+- PDF / 图片仅 UI 占位，尚未真正抽取文字。
+- 颜色跟随成员（未做独立调色板）。
+
+**未来升级路径（已预留架构）：**
+1. **PDF text extraction**（如 `pdf.js`）→ 填充 `PARSERS.pdf.parse`。
+2. **OCR**（图片 flyer）→ 填充 `PARSERS.image.parse`。
+3. **AI event extraction**：把规则解析换成 Claude 等模型，提升非结构化文本准确率。
+4. **Gmail forward inbox**：给每个家庭一个转发地址，邮件自动落入 inbox → 解析 → Review。
+5. **更强的 duplicate detection**：模糊标题 / 时间窗口匹配，跨来源去重。
+
+所有适配器共享一个契约：`parse(input, members) -> Candidate[]`，UI 不需改动即可替换真实抽取实现。
 
 ## 本地运行
 
@@ -102,4 +140,6 @@ npm run dev
 
 ## 数据与后续
 
-所有数据存在 iPad 本机 `localStorage`（命名空间 `familyHub.*`），不上传、不需登录。后续可把 `src/family/data/familyData.js` 的 mock 读取替换为 Supabase 或 ICS / Google Calendar 订阅，组件层无需大改。
+所有数据存在 iPad 本机 `localStorage`，不上传、不需登录。命名空间：`familyHub.events` / `chores` / `todos` / `grocery` / `meals.v2` / `rewards` / `photos` / `members` / `settings`。后续可把 `src/family/data/familyData.js` 的 mock 读取替换为 Supabase 或 ICS / Google Calendar 订阅，组件层无需大改。
+
+> 注意：上传照片以 data URL 存进 localStorage（单域名约 5MB 上限），适合少量照片做原型；正式版应改用对象存储 / Supabase Storage。

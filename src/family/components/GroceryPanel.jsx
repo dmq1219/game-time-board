@@ -27,6 +27,7 @@ export default function GroceryPanel({ grocery, onToggle, onAdd, onRemove }) {
                 {g.got ? "✓" : ""}
               </span>
               <span className="fh-list-text">{g.name}</span>
+              {g.source && <span className="fh-src-tag">{g.source}</span>}
               {g.qty && <span className="fh-qty">{g.qty}</span>}
             </button>
             <button

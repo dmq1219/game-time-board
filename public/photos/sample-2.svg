@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fd2f0"/>
+      <stop offset="0.5" stop-color="#bfe9f7"/>
+      <stop offset="0.5" stop-color="#2fa6d8"/>
+      <stop offset="1" stop-color="#1d6fa5"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sea)"/>
+  <circle cx="1280" cy="220" r="90" fill="#fff4c2"/>
+  <path d="M0 700 Q400 660 800 700 T1600 700 L1600 760 L0 760 Z" fill="#ffffff" opacity="0.5"/>
+  <rect x="0" y="760" width="1600" height="240" fill="#f4e2b8"/>
+  <ellipse cx="300" cy="880" rx="120" ry="26" fill="#e6cf9c"/>
+  <text x="60" y="940" font-family="Inter, sans-serif" font-size="44" font-weight="800" fill="#1d6fa5" opacity="0.9">Beach Day</text>
+</svg>

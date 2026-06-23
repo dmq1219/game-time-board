@@ -72,10 +72,18 @@ button:focus-visible {
 
 .fh-app {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
-  gap: clamp(10px, 1.4vw, 16px);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: clamp(8px, 1.2vw, 14px);
   height: 100dvh;
   padding: clamp(10px, 1.6vw, 20px);
+}
+
+/* Dashboard owns its own calendar(1fr) + panels(auto) split. */
+.fh-dashboard {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(8px, 1.2vw, 14px);
+  min-height: 0;
 }
 
 .fh-main {
@@ -89,7 +97,49 @@ button:focus-visible {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: clamp(8px, 1vw, 14px);
-  height: clamp(180px, 23vh, 240px);
+  height: clamp(176px, 22vh, 230px);
+}
+
+/* Full-page sections (meals / import / photos) scroll within the content row. */
+.fh-page {
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(14px, 2vw, 26px);
+}
+
+.fh-page-title {
+  margin: 0 0 6px;
+  font-size: clamp(22px, 2.6vw, 34px);
+  font-weight: 900;
+}
+
+.fh-muted {
+  margin: 0 0 14px;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.fh-error {
+  color: var(--danger);
+  font-weight: 800;
+}
+
+.fh-info {
+  margin: 10px 0 0;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 800;
+  color: var(--ok);
+}
+
+.fh-link-btn {
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 800;
+  color: var(--primary);
 }
 
 /* ------------------------------------------------------------------ topbar */
@@ -1186,11 +1236,491 @@ button:focus-visible {
   position: absolute;
   inset: 0;
   opacity: 0;
+  background-size: cover;
+  background-position: center;
   transition: opacity 1.4s ease;
 }
 
 .fh-slide.active {
   opacity: 1;
+}
+
+.fh-slide-fallback {
+  background: linear-gradient(135deg, #243244, #51607a);
+}
+
+.fh-saver-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.05) 38%, rgba(0, 0, 0, 0.5));
+}
+
+.fh-saver-next {
+  margin-top: clamp(18px, 3vh, 34px);
+  padding: 12px 22px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(4px);
+  text-align: center;
+}
+
+.fh-saver-next-label {
+  font-size: clamp(12px, 1.4vw, 16px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.fh-saver-next-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.fh-saver-next-row strong {
+  font-size: clamp(20px, 2.6vw, 34px);
+  font-weight: 900;
+}
+
+.fh-saver-next-row em {
+  font-style: normal;
+  font-size: clamp(15px, 1.8vw, 22px);
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.fh-saver-dot {
+  width: clamp(14px, 1.6vw, 20px);
+  height: clamp(14px, 1.6vw, 20px);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55);
+}
+
+/* ---------------------------------------------------------------- app nav */
+.fh-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 6px clamp(10px, 1.4vw, 16px);
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.fh-nav-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.fh-nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: clamp(82px, 9vw, 120px);
+  padding: 8px 14px;
+  border-radius: 11px;
+  font-size: clamp(15px, 1.6vw, 20px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.fh-nav-tab em {
+  font-style: normal;
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.fh-nav-tab.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(47, 111, 237, 0.3);
+}
+
+.fh-nextup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 8px 16px;
+  border-left: 7px solid var(--member);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.fh-nextup-label {
+  font-size: clamp(10px, 1.1vw, 13px);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--member);
+  white-space: nowrap;
+}
+
+.fh-nextup-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.fh-nextup-body strong {
+  font-size: clamp(15px, 1.6vw, 20px);
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fh-nextup-body em {
+  font-style: normal;
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 700;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------- dashboard meal summary */
+.fh-meal-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: clamp(10px, 1.2vw, 14px);
+}
+
+.fh-meal-now,
+.fh-meal-next {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fh-meal-tag {
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+
+.fh-meal-now strong {
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.fh-meal-next strong {
+  font-size: clamp(15px, 1.5vw, 19px);
+  font-weight: 800;
+}
+
+.fh-shop-pill {
+  margin-top: auto;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 900;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------- meal page */
+.fh-meal-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 26vw, 380px);
+  gap: clamp(12px, 1.6vw, 20px);
+  align-items: start;
+}
+
+.fh-meal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fh-meal-day-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fh-meal-day-head {
+  text-align: center;
+  font-size: clamp(13px, 1.4vw, 17px);
+  font-weight: 900;
+  color: var(--ink-soft);
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--line);
+}
+
+.fh-meal-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  text-align: left;
+  border-radius: 10px;
+  background: var(--bg);
+  border-left: 5px solid var(--primary);
+  min-height: 74px;
+}
+
+.fh-meal-slot-label {
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.fh-meal-slot-name {
+  font-size: clamp(12px, 1.25vw, 15px);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.fh-meal-slot-ing {
+  margin-top: auto;
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.fh-meal-grocery {
+  height: clamp(440px, 70vh, 720px);
+}
+
+.fh-meal-grocery .fh-card {
+  height: 100%;
+}
+
+/* ingredient chips (in slot editor) */
+.fh-ingredient-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-height: 20px;
+}
+
+.fh-ingredient {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 12px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: clamp(13px, 1.3vw, 15px);
+  font-weight: 800;
+}
+
+.fh-ingredient button {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(47, 111, 237, 0.18);
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.fh-src-tag {
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: clamp(9px, 0.95vw, 11px);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------- import page */
+.fh-import-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 16px;
+}
+
+.fh-import-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: var(--bg);
+  font-size: clamp(14px, 1.4vw, 18px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.fh-import-tab.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.fh-soon {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--warning, #f2a900);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.fh-import-textarea {
+  width: 100%;
+  border: 2px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 14px;
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.fh-import-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.fh-import-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border: 2px dashed var(--line-strong);
+  border-radius: 14px;
+  background: var(--bg);
+}
+
+.fh-stub {
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #fff4c7;
+  border-left: 6px solid #f2a900;
+  font-size: clamp(14px, 1.4vw, 17px);
+  font-weight: 700;
+  color: #7a5a00;
+}
+
+.fh-review {
+  margin-top: 22px;
+}
+
+.fh-review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.fh-review-head h3 {
+  margin: 0;
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 900;
+}
+
+.fh-review-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: 14px;
+}
+
+.fh-review-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.fh-review-card.is-dupe {
+  border-color: #f2a900;
+}
+
+.fh-dupe-badge {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fff4c7;
+  color: #7a5a00;
+  font-size: clamp(13px, 1.3vw, 15px);
+  font-weight: 800;
+}
+
+/* ---------------------------------------------------------- photos page */
+.fh-photos-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.fh-photos-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.fh-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.fh-photo {
+  position: relative;
+  margin: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.fh-photo img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.fh-photo figcaption {
+  padding: 8px 12px;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 800;
+}
+
+.fh-photo-tools {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.fh-fav,
+.fh-photo-del {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.fh-fav.on {
+  color: #f2a900;
 }
 
 .fh-saver-overlay {

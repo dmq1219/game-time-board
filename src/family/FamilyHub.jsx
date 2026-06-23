@@ -1,17 +1,16 @@
 import React, { useMemo, useState } from "react";
 import TopBar from "./components/TopBar";
-import CalendarPanel from "./components/CalendarPanel";
-import MembersToday from "./components/MembersToday";
-import ChoresPanel from "./components/ChoresPanel";
-import TodoPanel from "./components/TodoPanel";
-import GroceryPanel from "./components/GroceryPanel";
-import MealPlanPanel from "./components/MealPlanPanel";
-import RewardsPanel from "./components/RewardsPanel";
+import AppNav from "./components/AppNav";
+import Dashboard from "./components/Dashboard";
+import MealPlanPage from "./components/MealPlanPage";
+import ImportPage from "./components/ImportPage";
+import PhotosPage from "./components/PhotosPage";
 import EventModal from "./components/EventModal";
 import Screensaver from "./components/Screensaver";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useClock } from "./hooks/useClock";
 import { useIdleScreensaver } from "./hooks/useIdleScreensaver";
+import { nextEvent } from "./utils/events";
 import {
   FAMILY_MEMBERS,
   DEFAULT_SETTINGS,
@@ -35,10 +34,12 @@ export default function FamilyHub() {
   const [chores, setChores] = useLocalStorage("familyHub.chores", seed.chores);
   const [todos, setTodos] = useLocalStorage("familyHub.todos", seed.todos);
   const [grocery, setGrocery] = useLocalStorage("familyHub.grocery", seed.grocery);
-  const [meals, setMeals] = useLocalStorage("familyHub.meals", seed.meals);
+  const [meals, setMeals] = useLocalStorage("familyHub.meals.v2", seed.meals);
   const [rewards, setRewards] = useLocalStorage("familyHub.rewards", seed.rewards);
+  const [photos, setPhotos] = useLocalStorage("familyHub.photos", seed.photos);
   const [settings, setSettings] = useLocalStorage("familyHub.settings", DEFAULT_SETTINGS);
 
+  const [page, setPage] = useState("dashboard");
   const [view, setView] = useState("today");
   const [cursor, setCursor] = useState(() => new Date());
   const [modal, setModal] = useState(null); // event draft or null
@@ -46,6 +47,7 @@ export default function FamilyHub() {
   const now = useClock(1000);
   const { idle, wake, sleep } = useIdleScreensaver(settings.screensaverMinutes ?? 3);
   const today = useMemo(() => new Date(), [now.getMinutes()]); // stable within the minute
+  const nextEvt = useMemo(() => nextEvent(events, now), [events, now]);
 
   // ---- Event handlers ----
   const openAdd = (prefill = {}) =>
@@ -72,23 +74,64 @@ export default function FamilyHub() {
     setModal(null);
   };
 
+  // Magic Import: approve a reviewed candidate into the real calendar.
+  const approveCandidate = (cand) => {
+    setEvents((list) => [
+      ...list,
+      {
+        id: newId("evt"),
+        title: cand.title.trim(),
+        memberId: cand.memberId || members[0]?.id,
+        date: cand.date,
+        allDay: !cand.start,
+        start: cand.start || null,
+        end: cand.end || null,
+        location: cand.location || "",
+        notes: cand.notes || ""
+      }
+    ]);
+  };
+
   // ---- Chores / lists ----
   const toggleChore = (id) =>
     setChores((list) => list.map((c) => (c.id === id ? { ...c, done: !c.done } : c)));
 
-  const toggleTodo = (id) =>
-    setTodos((list) => list.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
-  const addTodo = (title) => setTodos((list) => [...list, { id: newId("todo"), title, done: false }]);
-  const removeTodo = (id) => setTodos((list) => list.filter((t) => t.id !== id));
+  const todoApi = {
+    toggle: (id) => setTodos((l) => l.map((t) => (t.id === id ? { ...t, done: !t.done } : t))),
+    add: (title) => setTodos((l) => [...l, { id: newId("todo"), title, done: false }]),
+    remove: (id) => setTodos((l) => l.filter((t) => t.id !== id))
+  };
 
-  const toggleGrocery = (id) =>
-    setGrocery((list) => list.map((g) => (g.id === id ? { ...g, got: !g.got } : g)));
-  const addGrocery = (name) =>
-    setGrocery((list) => [...list, { id: newId("groc"), name, qty: "", got: false }]);
-  const removeGrocery = (id) => setGrocery((list) => list.filter((g) => g.id !== id));
+  const groceryApi = {
+    toggle: (id) => setGrocery((l) => l.map((g) => (g.id === id ? { ...g, got: !g.got } : g))),
+    add: (name) => setGrocery((l) => [...l, { id: newId("groc"), name, qty: "", got: false }]),
+    remove: (id) => setGrocery((l) => l.filter((g) => g.id !== id))
+  };
 
-  const editMeal = (day, meal) =>
-    setMeals((list) => list.map((m) => (m.day === day ? { ...m, meal } : m)));
+  // ---- Meals ----
+  const editMealSlot = (day, slotKey, patch) =>
+    setMeals((list) =>
+      list.map((m) => (m.day === day ? { ...m, [slotKey]: { ...m[slotKey], ...patch } } : m))
+    );
+
+  // Add a meal's ingredients to the grocery list (skip names already present).
+  const addIngredientsToGrocery = (ingredients, source) =>
+    setGrocery((list) => {
+      const have = new Set(list.map((g) => g.name.toLowerCase()));
+      const additions = ingredients
+        .filter((name) => !have.has(name.toLowerCase()))
+        .map((name) => ({ id: newId("groc"), name, qty: "", got: false, source }));
+      return [...list, ...additions];
+    });
+
+  // ---- Photos ----
+  const photoApi = {
+    add: (src, name) =>
+      setPhotos((l) => [...l, { id: newId("photo"), src, name: name || "Photo", favorite: false }]),
+    remove: (id) => setPhotos((l) => l.filter((p) => p.id !== id)),
+    toggleFavorite: (id) =>
+      setPhotos((l) => l.map((p) => (p.id === id ? { ...p, favorite: !p.favorite } : p)))
+  };
 
   // ---- Rewards: stars (from chores) -> screen time ----
   const redeem = (memberId) => {
@@ -122,49 +165,69 @@ export default function FamilyHub() {
     setGrocery(fresh.grocery);
     setMeals(fresh.meals);
     setRewards(fresh.rewards);
+    setPhotos(fresh.photos);
   };
 
   if (idle) {
-    return <Screensaver now={now} onWake={wake} />;
+    return (
+      <Screensaver now={now} photos={photos} members={members} nextEvt={nextEvt} onWake={wake} />
+    );
   }
 
   return (
     <div className="fh-root">
       <div className="fh-app">
         <TopBar now={now} familyName={settings.familyName} weather={settings.weather} />
+        <AppNav page={page} onChange={setPage} nextEvt={nextEvt} members={members} />
 
-        <div className="fh-main">
-          <CalendarPanel
+        {page === "dashboard" && (
+          <Dashboard
             view={view}
-            onViewChange={setView}
+            setView={setView}
             cursor={cursor}
-            onCursorChange={setCursor}
+            setCursor={setCursor}
             events={events}
             members={members}
+            today={today}
+            chores={chores}
+            todos={todos}
+            grocery={grocery}
+            meals={meals}
+            rewards={rewards}
             onEventClick={(e) => setModal(e)}
             onAddEvent={openAdd}
-          />
-          <MembersToday
-            date={today}
-            members={members}
-            events={events}
-            onEventClick={(e) => setModal(e)}
             onAddForMember={openAddForMember}
+            onToggleChore={toggleChore}
+            onRedeem={redeem}
+            todoApi={todoApi}
+            groceryApi={groceryApi}
+            onOpenPlanner={() => setPage("meals")}
           />
-        </div>
+        )}
 
-        <div className="fh-bottom">
-          <ChoresPanel chores={chores} members={members} onToggle={toggleChore} />
-          <TodoPanel todos={todos} onToggle={toggleTodo} onAdd={addTodo} onRemove={removeTodo} />
-          <GroceryPanel
+        {page === "meals" && (
+          <MealPlanPage
+            meals={meals}
             grocery={grocery}
-            onToggle={toggleGrocery}
-            onAdd={addGrocery}
-            onRemove={removeGrocery}
+            onEditSlot={editMealSlot}
+            onAddIngredients={addIngredientsToGrocery}
+            groceryApi={groceryApi}
           />
-          <MealPlanPanel meals={meals} todayDow={today.getDay()} onEdit={editMeal} />
-          <RewardsPanel members={members} chores={chores} rewards={rewards} onRedeem={redeem} />
-        </div>
+        )}
+
+        {page === "import" && (
+          <ImportPage members={members} events={events} onApprove={approveCandidate} />
+        )}
+
+        {page === "photos" && (
+          <PhotosPage
+            photos={photos}
+            onAdd={photoApi.add}
+            onDelete={photoApi.remove}
+            onToggleFavorite={photoApi.toggleFavorite}
+            onStartScreensaver={sleep}
+          />
+        )}
 
         <footer className="fh-footer">
           <span>Mock data · localStorage · 原型演示</span>
