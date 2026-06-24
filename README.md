@@ -46,7 +46,9 @@ npm run dev
 - **家庭中控（iPad 常驻入口）**：<https://family-hub-5rp.pages.dev/family>（Cloudflare Pages；Pages 会把 `/family.html` 跳到 `/family`）
 - **Gmail 同步 Worker**：`https://family-hub-gmail-sync.dmq1219.workers.dev`（Cron 每 15 分钟；`/run` 需 `RUN_TOKEN`，详见 [`worker/`](worker/README.md)）
 
-> ⚠️ **上线前须知**：构建会把 Supabase 的 anon key 打进公开 bundle，而当前 **RLS 关闭** —— 任何拿到 Pages 网址的人都能读写家庭数据。正式常驻前请**开启 RLS（或加访问口令）**。
+> 🔒 **访问门禁（已加）**：线上构建配置了 `VITE_FAMILY_PIN`，进 `/family` 需先输入 PIN（验证后存 `localStorage`，kiosk 不必每次重输）。这挡住孩子和路人，但**是应用层门禁**——Supabase anon key 仍在公开 bundle 里，懂技术的人绕过前端仍可直连数据库。
+>
+> ⚠️ **敏感数据须知**：要真正做服务端防护，请额外**开启 Supabase RLS**（当前关闭）。PIN 门禁 + RLS 才是完整方案。PIN 配置见下方「访问 PIN 门禁」。
 
 ## 技术栈说明（与需求的差异）
 
@@ -59,6 +61,12 @@ npm run dev
 ### 连接 Supabase（可选）
 
 把项目根目录的 `.env.example` 复制为 `.env.local` 并填入你的 Supabase `URL` 和 `anon key`（控制台 → Settings → API），重启 `npm run dev` 即可。需要的数据表见 `src/family/lib/mappers.js` 里的字段映射；`import_candidates` / `events` 等已开启 Realtime。
+
+### 访问 PIN 门禁（可选）
+
+在 `.env.local` 设 `VITE_FAMILY_PIN=你的数字PIN`（4–6 位）即开启：进 `/family` 先输 PIN，验证后存 `localStorage`，kiosk 不会每次重输。留空则不拦截（dev/离线无摩擦）。
+
+> PIN 是**构建期变量**，会打进公开 JS bundle —— **别用重要密码**，它只是挡住孩子/路人的应用层门禁，不是服务端防护。改 PIN 需重新 `npm run build` + 部署。换设备/忘了已解锁状态时，清掉浏览器该站点的 `localStorage` 即可重新弹出门禁。
 
 ## 页面结构
 
