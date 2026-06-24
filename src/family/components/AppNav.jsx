@@ -10,7 +10,7 @@ const TABS = [
 ];
 
 // Page tabs + an always-visible "next important event" pill.
-export default function AppNav({ page, onChange, nextEvt, members }) {
+export default function AppNav({ page, onChange, nextEvt, members, importCount = 0 }) {
   const member = nextEvt ? memberById(members, nextEvt.memberId) : null;
 
   return (
@@ -25,6 +25,11 @@ export default function AppNav({ page, onChange, nextEvt, members }) {
           >
             {t.label}
             <em>{t.cn}</em>
+            {t.id === "import" && importCount > 0 && (
+              <span className="fh-nav-badge" aria-label={`${importCount} pending`}>
+                {importCount}
+              </span>
+            )}
           </button>
         ))}
       </div>

@@ -81,13 +81,19 @@ function ReviewCard({ cand, members, duplicate, onChange, onApprove, onReject })
   );
 }
 
-export default function ImportPage({ members, events, onApprove }) {
+export default function ImportPage({ members, events, candidates: remote = [], onApprove, onReject }) {
   const [source, setSource] = useState("email");
   const [text, setText] = useState("");
   const [candidates, setCandidates] = useState([]);
+  const [remoteDraft, setRemoteDraft] = useState({}); // local edits to inbox cards, keyed by id
   const [stubMsg, setStubMsg] = useState("");
   const [info, setInfo] = useState("");
   const fileRef = useRef(null);
+
+  // Inbox cards are remote candidates merged with any in-progress local edits.
+  const inbox = remote.map((c) => ({ ...c, ...remoteDraft[c.id] }));
+  const editRemote = (next) =>
+    setRemoteDraft((d) => ({ ...d, [next.id]: { ...d[next.id], ...next } }));
 
   const extractEmail = () => {
     const found = PARSERS.email.parse(text, members);
@@ -132,6 +138,31 @@ export default function ImportPage({ members, events, onApprove }) {
         Paste a school email (or upload a flyer). We extract events for you to review — nothing is
         added to the calendar until you approve it.
       </p>
+
+      {inbox.length > 0 && (
+        <div className="fh-review fh-inbox">
+          <div className="fh-review-head">
+            <h3>📬 Inbox · 来自 Gmail（自动同步） ({inbox.length})</h3>
+          </div>
+          <p className="fh-muted">
+            These arrived automatically from your email. Review and approve to add them to the
+            calendar.
+          </p>
+          <div className="fh-review-list">
+            {inbox.map((c) => (
+              <ReviewCard
+                key={c.id}
+                cand={c}
+                members={members}
+                duplicate={findDuplicate(events, c)}
+                onChange={editRemote}
+                onApprove={onApprove}
+                onReject={() => onReject(c.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="fh-import-tabs">
         {Object.values(PARSERS).map((p) => (
