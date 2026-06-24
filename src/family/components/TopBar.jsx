@@ -1,6 +1,7 @@
 import React from "react";
 import WeatherIcon from "./WeatherIcon";
 import SettingsMenu from "./SettingsMenu";
+import MemberAvatarStrip from "./MemberAvatarStrip";
 import { formatLongDate, formatClock, formatTime } from "../utils/calendar";
 import { memberById } from "../data/familyData";
 
@@ -17,7 +18,8 @@ export default function TopBar({
   importCount,
   onRename,
   onPhotoMode,
-  onReset
+  onReset,
+  onAddForMember
 }) {
   const { time, period } = formatClock(now);
   const member = nextEvt ? memberById(members, nextEvt.memberId) : null;
@@ -58,6 +60,8 @@ export default function TopBar({
           </span>
         </div>
       )}
+
+      <MemberAvatarStrip members={members} date={now} onAddForMember={onAddForMember} />
 
       <div className="fh-topbar-right">
         <div className="fh-weather">

@@ -104,6 +104,7 @@ export default function FamilyHub() {
           onRename={editFamilyName}
           onPhotoMode={sleep}
           onReset={resetDemo}
+          onAddForMember={openAddForMember}
         />
 
         {page === "dashboard" && (

@@ -254,6 +254,60 @@ button:focus-visible {
   color: var(--ink-soft);
 }
 
+/* Compact member avatar strip (portrait only — see the portrait media query).
+   Each avatar adds an event for that member; the + badge signals the action. */
+.fh-avatar-strip {
+  display: none; /* shown only in portrait */
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.fh-avatar-chip {
+  position: relative;
+  width: clamp(38px, 6vw, 46px);
+  height: clamp(38px, 6vw, 46px);
+  padding: 0;
+  border-radius: 50%;
+  flex: none;
+}
+
+.fh-avatar-chip-img,
+.fh-avatar-chip-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  object-fit: cover;
+  background: var(--member);
+  color: #fff;
+  font-size: clamp(14px, 1.6vw, 18px);
+  font-weight: 900;
+}
+
+.fh-avatar-chip-img {
+  background: #fff;
+}
+
+.fh-avatar-chip-plus {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  border: 2px solid var(--surface);
+}
+
 /* weather glyphs */
 .wx-sun {
   fill: #f9b21d;
@@ -1924,7 +1978,8 @@ button:focus-visible {
     grid-template-rows: auto auto;
   }
 
-  /* Stack calendar over the member list, each at a usable size. */
+  /* Calendar only — the member list is replaced by the compact avatar strip
+     in the top bar (see below). */
   .fh-main {
     grid-template-columns: 1fr;
   }
@@ -1932,11 +1987,7 @@ button:focus-visible {
     min-height: 320px;
   }
   .fh-members {
-    max-height: none;
-    overflow: visible;
-  }
-  .fh-members-list {
-    overflow: visible;
+    display: none;
   }
 
   /* Panels flow into as many columns as the width allows. */
@@ -1946,10 +1997,11 @@ button:focus-visible {
   }
 
   /* Top bar reflows to two rows so Next up / weather / clock stop colliding:
-     row 1 = brand + weather/clock, row 2 = Next up full width. */
+     row 1 = brand + weather/clock, row 2 = Next up + the member avatar strip. */
   .fh-topbar {
     grid-template-columns: 1fr auto;
-    row-gap: 8px;
+    row-gap: 10px;
+    column-gap: 16px;
   }
   .fh-topbar-left {
     grid-column: 1;
@@ -1961,9 +2013,16 @@ button:focus-visible {
     justify-self: end;
   }
   .fh-nextup {
-    grid-column: 1 / -1;
+    grid-column: 1;
     grid-row: 2;
     justify-self: stretch;
+  }
+  /* The simplified "Who's doing what": avatars in the space right of Next up. */
+  .fh-avatar-strip {
+    display: flex;
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
   }
 }
 
