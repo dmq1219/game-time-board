@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
+import { setupPWA } from "./pwa.js";
 import "./styles.css";
 
 createRoot(document.getElementById("root")).render(
@@ -9,20 +10,4 @@ createRoot(document.getElementById("root")).render(
   </React.StrictMode>
 );
 
-if (import.meta.env.PROD && "serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL })
-      .catch(() => {});
-  });
-}
-
-if (import.meta.env.DEV && "serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .getRegistrations()
-    .then((registrations) => registrations.forEach((registration) => registration.unregister()));
-
-  if ("caches" in window) {
-    caches.keys().then((keys) => keys.forEach((key) => caches.delete(key)));
-  }
-}
+setupPWA();

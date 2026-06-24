@@ -78,16 +78,18 @@ function buildEvents() {
   ];
 }
 
+// Each kid's chores total 5★ so the "5★ = 30 min" redeem is reachable.
+// Emma starts fully done (Redeem live on load); the others need one more tap.
 function buildChores() {
   return [
-    { id: uid("chore"), title: "Make the bed", memberId: "emma", stars: 1, done: true },
-    { id: uid("chore"), title: "Feed the dog", memberId: "liam", stars: 1, done: true },
-    { id: uid("chore"), title: "Take out trash", memberId: "noah", stars: 2, done: false },
-    { id: uid("chore"), title: "Set the table", memberId: "zoe", stars: 1, done: false },
-    { id: uid("chore"), title: "Tidy the playroom", memberId: "liam", stars: 2, done: false },
-    { id: uid("chore"), title: "Water the plants", memberId: "emma", stars: 1, done: false },
-    { id: uid("chore"), title: "Pack school bag", memberId: "noah", stars: 1, done: true },
-    { id: uid("chore"), title: "Put away laundry", memberId: "zoe", stars: 2, done: false }
+    { id: uid("chore"), title: "Make the bed", memberId: "emma", stars: 2, done: true },
+    { id: uid("chore"), title: "Finish homework", memberId: "emma", stars: 3, done: true },
+    { id: uid("chore"), title: "Feed the dog", memberId: "liam", stars: 2, done: true },
+    { id: uid("chore"), title: "Tidy the playroom", memberId: "liam", stars: 3, done: false },
+    { id: uid("chore"), title: "Pack school bag", memberId: "noah", stars: 2, done: true },
+    { id: uid("chore"), title: "Take out trash", memberId: "noah", stars: 3, done: false },
+    { id: uid("chore"), title: "Set the table", memberId: "zoe", stars: 2, done: true },
+    { id: uid("chore"), title: "Put away laundry", memberId: "zoe", stars: 3, done: false }
   ];
 }
 

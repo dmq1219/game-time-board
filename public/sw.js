@@ -1,19 +1,26 @@
-const CACHE_NAME = "game-time-board-v9";
+// Service worker for both entries (index.html + family.html).
+// App shell is precached resiliently (a single missing file can't abort install);
+// hashed Vite assets are cached at runtime on first fetch.
+const CACHE_NAME = "game-time-board-v10";
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./family.html",
   "./manifest.webmanifest",
-  "./assets/index.css",
-  "./assets/index.js",
+  "./family-manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
 
 const INDEX_URL = new URL("./index.html", self.registration.scope).href;
+const FAMILY_URL = new URL("./family.html", self.registration.scope).href;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then((cache) =>
+      // Cache each item independently so one 404 doesn't fail the whole install.
+      Promise.allSettled(APP_SHELL.map((url) => cache.add(url)))
+    )
   );
   self.skipWaiting();
 });
@@ -35,6 +42,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
+  // Network-first, fall back to cache; cache successful same-origin GETs.
   event.respondWith(
     fetch(event.request)
       .then((response) => {
@@ -42,13 +50,16 @@ self.addEventListener("fetch", (event) => {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
-
         return response;
       })
       .catch(() =>
         caches.match(event.request).then((cached) => {
           if (cached) return cached;
-          if (event.request.mode === "navigate") return caches.match(INDEX_URL);
+          // Offline navigation fallback: serve the matching app-shell page.
+          if (event.request.mode === "navigate") {
+            const wantsFamily = url.pathname.includes("family");
+            return caches.match(wantsFamily ? FAMILY_URL : INDEX_URL);
+          }
           return undefined;
         })
       )
