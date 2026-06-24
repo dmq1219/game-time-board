@@ -419,12 +419,15 @@ button:focus-visible {
 .fh-day-grid {
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
 }
 
+/* Keep the 6AM–10PM axis readable: never let the hour rows pack tighter than
+   ~20px apart (labels would overlap). On short screens the grid scrolls
+   instead of crushing the timeline. */
 .fh-day-hours {
   position: relative;
-  height: 100%;
-  min-height: 0;
+  height: max(100%, 340px);
 }
 
 .fh-hour-row {
@@ -1866,7 +1869,6 @@ button:focus-visible {
   .fh-bottom {
     height: clamp(138px, 18vh, 188px);
   }
-  .fh-day-hours,
   .fh-week,
   .fh-month {
     min-height: 0;
