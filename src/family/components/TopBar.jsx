@@ -29,7 +29,16 @@ export default function TopBar({
       <div className="fh-topbar-left">
         <div className="fh-brand">
           <p className="fh-eyebrow">Family Hub · 家庭中控</p>
-          <h1 className="fh-family-name">{familyName}</h1>
+          <h1 className="fh-family-name">
+            <button
+              type="button"
+              className="fh-home-btn"
+              onClick={() => onChangePage("dashboard")}
+              title="返回首页"
+            >
+              {familyName}
+            </button>
+          </h1>
         </div>
         <SettingsMenu
           page={page}
