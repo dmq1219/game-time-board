@@ -6,17 +6,18 @@ app shows them in its Magic Import inbox (in real time) for a human to approve �
 nothing hits the calendar automatically.
 
 ```
-Gmail  ──(Cron poll, every 15 min)──▶  Cloudflare Worker
+Gmail  ──(Cron poll, twice a day)──▶  Cloudflare Worker
                                           │  DeepSeek extracts events
                                           ▼
                                    Supabase import_candidates (status: pending)
                                           │  Supabase realtime
                                           ▼
-                              iPad app → Import inbox → you approve → calendar
+                          iPad app → 邮件导入 inbox → you approve → calendar
 ```
 
 Why polling (not Gmail push): it matches "定时同步", needs no Pub/Sub topic, and
-nothing to renew. Trade-off: up to ~15 min latency (tune the cron).
+nothing to renew. Current cron is `0 3,15 * * *` (twice daily, ≈8am/8pm Pacific);
+tune `crons` in `wrangler.toml` for more/less frequency.
 
 ## Cost (all within free tiers for a household)
 
@@ -99,6 +100,37 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 Then open the app's **Import** tab — new candidates appear in the Gmail inbox
 section with a nav badge. Watch live logs with `npx wrangler tail`.
+
+## Adding more mailboxes (e.g. mom's) + who an event is "for"
+
+**Each Gmail account must authorise once** — there's no way around its owner
+logging in. To add mom's inbox:
+
+1. In Google Cloud → **OAuth consent screen**, add mom's address as a **Test user**.
+2. Mom mints her refresh token (logged into HER Google account):
+   ```bash
+   cd worker
+   GOOGLE_CLIENT_ID=...apps.googleusercontent.com \
+   GOOGLE_CLIENT_SECRET=... \
+   npm run get-token            # mom approves read-only Gmail in the browser
+   ```
+3. Set the **`GMAIL_ACCOUNTS`** secret to a JSON array of all mailboxes:
+   ```bash
+   npx wrangler secret put GMAIL_ACCOUNTS
+   # paste, on one line:
+   # [{"token":"<dad-refresh>","label":"maoquandeng","defaultMember":""},
+   #  {"token":"<mom-refresh>","label":"mom","defaultMember":"noah"}]
+   ```
+   The worker scans every listed mailbox each run. If `GMAIL_ACCOUNTS` is unset it
+   falls back to the single `GOOGLE_REFRESH_TOKEN` (so existing setups keep working).
+
+**Who is each event for?** Two layers:
+- The extractor is given your family roster (`id = name (role)`) and assigns
+  `memberId` when the email clearly names a member (e.g. "Edward's recital" →
+  Edward). This already works for one or many mailboxes.
+- When the email doesn't name anyone, the mailbox's **`defaultMember`** (a
+  `family_members` id) is used — handy if a mailbox mostly concerns one child.
+- You can always reassign in the app's review card before approving.
 
 ## How it stays correct
 

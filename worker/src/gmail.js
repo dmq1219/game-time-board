@@ -4,11 +4,11 @@
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const API = "https://gmail.googleapis.com/gmail/v1/users/me";
 
-export async function getAccessToken(env) {
+export async function getAccessToken(env, refreshToken) {
   const body = new URLSearchParams({
     client_id: env.GOOGLE_CLIENT_ID,
     client_secret: env.GOOGLE_CLIENT_SECRET,
-    refresh_token: env.GOOGLE_REFRESH_TOKEN,
+    refresh_token: refreshToken || env.GOOGLE_REFRESH_TOKEN,
     grant_type: "refresh_token"
   });
   const res = await fetch(TOKEN_URL, {

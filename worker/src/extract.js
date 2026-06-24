@@ -22,11 +22,11 @@ Reply with a single JSON object of exactly this shape:
 
 export async function extractEvents(env, email, members) {
   const roster = members.length
-    ? members.map((m) => `${m.id} = ${m.name}`).join("; ")
+    ? members.map((m) => `${m.id} = ${m.name}${m.role ? ` (${m.role})` : ""}`).join("; ")
     : "(none provided)";
 
   const user = [
-    `Family members (id = name): ${roster}`,
+    `Family members (id = name (role)): ${roster}`,
     `Email received: ${email.date || "unknown"}`,
     `From: ${email.from}`,
     `Subject: ${email.subject}`,

@@ -9,7 +9,7 @@ function headers(env) {
 }
 
 export async function fetchMembers(env) {
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/family_members?select=id,name`, {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/family_members?select=id,name,role`, {
     headers: headers(env)
   });
   if (!res.ok) throw new Error(`members fetch failed: ${res.status}`);

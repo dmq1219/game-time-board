@@ -2,7 +2,12 @@
 # In production these are set with: wrangler secret put NAME
 GOOGLE_CLIENT_ID=your-oauth-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-oauth-client-secret
+# Single mailbox (back-compat). For MULTIPLE mailboxes use GMAIL_ACCOUNTS below instead.
 GOOGLE_REFRESH_TOKEN=token-from-get-refresh-token-script
+# Multiple mailboxes: a JSON array. `defaultMember` is a family_members id used
+# when the email doesn't clearly name a person (leave "" for none). Each token
+# comes from running get-refresh-token while logged into THAT Google account.
+# GMAIL_ACCOUNTS=[{"token":"<dad-refresh>","label":"maoquandeng","defaultMember":""},{"token":"<mom-refresh>","label":"mom","defaultMember":"noah"}]
 DEEPSEEK_API_KEY=sk-...
 SUPABASE_SERVICE_KEY=your-service-role-key-or-anon-key-if-RLS-disabled
 # Protects the manual /run endpoint. Generate: python3 -c "import secrets;print(secrets.token_urlsafe(32))"
