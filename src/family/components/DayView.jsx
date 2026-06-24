@@ -126,14 +126,14 @@ export default function DayView({ date, events, members, onEventClick, onSlotCli
                   }}
                   onClick={() => onEventClick(e)}
                 >
-                  <span className="fh-event-bar" style={{ background: color }} />
-                  {avatar && (
+                  {avatar ? (
                     <img className="fh-event-avatar" src={avatar} alt="" loading="lazy" />
+                  ) : (
+                    <span className="fh-event-bar" style={{ background: color }} />
                   )}
                   <span className="fh-event-body">
                     <strong style={{ color }}>{formatTime(e.start)}</strong>
                     <span className="fh-event-title">{e.title}</span>
-                    {e.location && <span className="fh-event-loc">{e.location}</span>}
                   </span>
                 </button>
               );
