@@ -30,7 +30,7 @@ npm run dev
 
 闲置 iPad 横屏全屏运行的「家庭运营看板」，灵感来自 Skylight Calendar，但**不复制其品牌、商标和 UI**。它把日历、家务、清单、餐食计划和「星星兑换 screen time」放在一块公共屏幕上，让全家一眼看到：今天谁去哪、谁还没做家务、晚饭吃什么。
 
-> 这是一个**原型**：第一版只用 mock 数据 + `localStorage`，**不接** Google / iCloud / Outlook 等真实日历 API。数据结构已为后续替换 Supabase / 日历订阅预留。
+> **现状**：已接入 **Supabase**（云端数据库 + Realtime 实时同步），并提供一个 **Cloudflare Worker** 定时把 Gmail 学校邮件解析成待确认日历事件（见下方「Gmail 自动导入」）。若未配置 Supabase 环境变量，应用自动回退到纯 `localStorage` 离线模式（原「游戏时间看板」不受影响）。
 
 ## 入口
 
@@ -46,8 +46,12 @@ npm run dev
 需求里写的是 **Next.js + Tailwind**。但本仓库已经是一个可用的 **Vite + React PWA**，需求也注明「维护太难的话可以协调」。为了**不在同一个仓库里维护两套构建工具链**，家庭中控沿用了现有的 **Vite + React + 原生 CSS**，同样满足：可安装 PWA、可 Add to Home Screen、可部署 Vercel。后续若要迁移到 Next.js，组件与数据层（`src/family/`）可整体平移。
 
 - **构建**：Vite 多页面（`index.html` + `family.html` 两个入口，共用一份依赖 chunk）。
-- **状态/存储**：React state + `localStorage`（复用现有 `src/hooks/useLocalStorage.js`）。
+- **状态/存储**：React state + **Supabase**（`src/family/hooks/useFamilyData.js`）。乐观更新 + Postgres Realtime 跨设备同步；首次启动自动播种 mock 数据。无环境变量时回退到 `localStorage`。
 - **样式**：原生 CSS（`src/family/styles.css`），大字号、强对比、儿童可读，不依赖 UI 库。
+
+### 连接 Supabase（可选）
+
+把项目根目录的 `.env.example` 复制为 `.env.local` 并填入你的 Supabase `URL` 和 `anon key`（控制台 → Settings → API），重启 `npm run dev` 即可。需要的数据表见 `src/family/lib/mappers.js` 里的字段映射；`import_candidates` / `events` 等已开启 Realtime。
 
 ## 页面结构
 
@@ -91,18 +95,23 @@ npm run dev
 - **Duplicate detection**：同一天 + 同标题 + 同开始时间，会提示 **"Possible duplicate"**。
 - **Upload PDF / Upload image**：第一版是占位（显示「parsing coming soon」），但 parser adapter 已按统一契约接好（`PARSERS.pdf` / `PARSERS.image`）。
 
-**v1 当前限制：**
-- 不接 Gmail、不做真正的邮件转发；只处理你**手动粘贴**的文本。
-- 规则解析对非常见措辞、跨行事件、相对日期（如「下周三」中文）覆盖有限；过去的裸日期会顺延到明年。
+**Gmail 自动导入（已实现，见 `worker/`）：**
+- 一个 **Cloudflare Worker** 定时（默认每 15 分钟）读取 Gmail，用 **Claude Haiku** 把学校邮件解析成事件，写入 Supabase `import_candidates`（状态 `pending`）。
+- 应用通过 **Realtime** 实时收到，在 **Import → 收件箱** 区显示，导航栏出现红点徽章；你 approve 才进日历。
+- 邮件被当作**不可信数据**：解析器只抽取事件、不执行邮件里的任何指令（防 prompt injection）。`processed_emails` 表去重，避免重复导入。
+- 部署与配置见 [`worker/README.md`](worker/README.md)。规则解析器（`parsers.js`）仍保留，用于**手动粘贴**场景。
+
+**当前限制：**
+- 规则（粘贴）解析对跨行/非常见措辞覆盖有限；真实多行学校邮件建议走 Gmail Worker（AI 解析）。
 - PDF / 图片仅 UI 占位，尚未真正抽取文字。
+- Gmail Worker 用轮询（非 Pub/Sub 推送），最长约一个轮询周期的延迟。
 - 颜色跟随成员（未做独立调色板）。
 
 **未来升级路径（已预留架构）：**
 1. **PDF text extraction**（如 `pdf.js`）→ 填充 `PARSERS.pdf.parse`。
 2. **OCR**（图片 flyer）→ 填充 `PARSERS.image.parse`。
-3. **AI event extraction**：把规则解析换成 Claude 等模型，提升非结构化文本准确率。
-4. **Gmail forward inbox**：给每个家庭一个转发地址，邮件自动落入 inbox → 解析 → Review。
-5. **更强的 duplicate detection**：模糊标题 / 时间窗口匹配，跨来源去重。
+3. **Gmail 实时推送**：用 Gmail watch + Pub/Sub 替换轮询，做到秒级。
+4. **更强的 duplicate detection**：模糊标题 / 时间窗口匹配，跨来源去重。
 
 所有适配器共享一个契约：`parse(input, members) -> Candidate[]`，UI 不需改动即可替换真实抽取实现。
 
@@ -140,6 +149,8 @@ npm run dev
 
 ## 数据与后续
 
-所有数据存在 iPad 本机 `localStorage`，不上传、不需登录。命名空间：`familyHub.events` / `chores` / `todos` / `grocery` / `meals.v2` / `rewards` / `photos` / `members` / `settings`。后续可把 `src/family/data/familyData.js` 的 mock 读取替换为 Supabase 或 ICS / Google Calendar 订阅，组件层无需大改。
+- **已配置 Supabase**：数据存在云端 Postgres，多设备实时同步，首次启动自动播种。表结构见 `src/family/lib/mappers.js`；写入走 `useFamilyData.js` 的乐观更新 + Realtime 回流。
+- **未配置环境变量**：自动回退到 iPad 本机 `localStorage`（命名空间 `familyHub.*`），离线可用。
+- **Gmail 自动导入**：`worker/` 目录的 Cloudflare Worker，定时把学校邮件解析进 `import_candidates`。
 
-> 注意：上传照片以 data URL 存进 localStorage（单域名约 5MB 上限），适合少量照片做原型；正式版应改用对象存储 / Supabase Storage。
+> 注意：上传照片目前以 data URL 存储（localStorage 约 5MB / Supabase 行也不宜过大），适合少量照片做原型；正式版应改用对象存储 / Supabase Storage。
