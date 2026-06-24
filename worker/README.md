@@ -74,6 +74,7 @@ npx wrangler secret put GOOGLE_CLIENT_SECRET
 npx wrangler secret put GOOGLE_REFRESH_TOKEN
 npx wrangler secret put DEEPSEEK_API_KEY
 npx wrangler secret put SUPABASE_SERVICE_KEY
+npx wrangler secret put RUN_TOKEN   # any long random string; protects /run
 
 npx wrangler deploy
 ```
@@ -84,11 +85,16 @@ npx wrangler deploy
 ## Test it
 
 ```bash
+# /run requires the RUN_TOKEN (header or ?token=). The Cron trigger needs no token.
+TOKEN=...   # the value you set for RUN_TOKEN
+
 # Dry run — extracts and reports, writes nothing:
-curl "https://family-hub-gmail-sync.<your-subdomain>.workers.dev/run?dry=1"
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://family-hub-gmail-sync.<your-subdomain>.workers.dev/run?dry=1"
 
 # Real run — writes pending candidates to Supabase:
-curl "https://family-hub-gmail-sync.<your-subdomain>.workers.dev/run"
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://family-hub-gmail-sync.<your-subdomain>.workers.dev/run"
 ```
 
 Then open the app's **Import** tab — new candidates appear in the Gmail inbox

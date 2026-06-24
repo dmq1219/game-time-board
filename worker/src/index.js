@@ -45,10 +45,20 @@ export default {
     );
   },
 
-  // Manual trigger for testing: GET /run  (add ?dry=1 to extract without writing).
+  // Manual trigger: GET /run  (add ?dry=1 to extract without writing).
+  // Protected by RUN_TOKEN — pass it as `Authorization: Bearer <token>` or
+  // `?token=<token>`. Fails closed: no RUN_TOKEN set ⇒ always 401. The Cron
+  // trigger calls scheduled() directly and never hits this HTTP path.
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/run") {
+      const provided =
+        (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "") ||
+        url.searchParams.get("token") ||
+        "";
+      if (!env.RUN_TOKEN || provided !== env.RUN_TOKEN) {
+        return new Response("Unauthorized", { status: 401 });
+      }
       try {
         const result = await runSync(env, { dryRun: url.searchParams.get("dry") === "1" });
         return Response.json(result);
@@ -56,7 +66,7 @@ export default {
         return Response.json({ error: String(err) }, { status: 500 });
       }
     }
-    return new Response("Family Hub Gmail sync worker. GET /run to trigger.", {
+    return new Response("Family Hub Gmail sync worker. Cron-driven; /run requires a token.", {
       headers: { "content-type": "text/plain" }
     });
   }
