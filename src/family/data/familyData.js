@@ -6,12 +6,12 @@ import { toISODate, addDays, startOfWeek } from "../utils/calendar";
 
 // Family members, each with a high-contrast colour used everywhere they appear.
 export const FAMILY_MEMBERS = [
-  { id: "mom", name: "Mom", role: "妈妈", color: "#e0457b", soft: "#fdeaf1" },
-  { id: "dad", name: "Dad", role: "爸爸", color: "#2f6fed", soft: "#e7efff" },
-  { id: "emma", name: "Emma", role: "姐姐", color: "#11a37f", soft: "#e3f7f1" },
-  { id: "liam", name: "Liam", role: "哥哥", color: "#8b5cf6", soft: "#f0ebfe" },
-  { id: "noah", name: "Noah", role: "弟弟", color: "#f2900d", soft: "#fff1dc" },
-  { id: "zoe", name: "Zoe", role: "妹妹", color: "#0aa6c4", soft: "#e0f6fb" }
+  { id: "dad", name: "爸爸", role: "Dad", color: "#2f6fed", soft: "#e7efff" },
+  { id: "mom", name: "妈妈", role: "Mom", color: "#e0457b", soft: "#fdeaf1" },
+  { id: "emma", name: "CT", role: "姐姐", color: "#11a37f", soft: "#e3f7f1" },
+  { id: "liam", name: "Edward", role: "哥哥", color: "#8b5cf6", soft: "#f0ebfe" },
+  { id: "noah", name: "Sarah", role: "弟弟", color: "#f2900d", soft: "#fff1dc" },
+  { id: "zoe", name: "Katty", role: "妹妹", color: "#0aa6c4", soft: "#e0f6fb" }
 ];
 
 export const EVENT_COLOR_FALLBACK = "#6b7280";

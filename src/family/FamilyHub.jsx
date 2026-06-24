@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import TopBar from "./components/TopBar";
-import AppNav from "./components/AppNav";
 import Dashboard from "./components/Dashboard";
 import MealPlanPage from "./components/MealPlanPage";
 import ImportPage from "./components/ImportPage";
@@ -10,6 +9,7 @@ import Screensaver from "./components/Screensaver";
 import { useClock } from "./hooks/useClock";
 import { useIdleScreensaver } from "./hooks/useIdleScreensaver";
 import { useFamilyData } from "./hooks/useFamilyData";
+import { useWeather } from "./hooks/useWeather";
 import { nextEvent } from "./utils/events";
 
 // "09:00" -> "10:00"
@@ -41,6 +41,7 @@ export default function FamilyHub() {
   const [modal, setModal] = useState(null); // event draft or null
 
   const now = useClock(1000);
+  const weather = useWeather(settings.weather);
   const { idle, wake, sleep } = useIdleScreensaver(settings.screensaverMinutes ?? 3);
   const today = useMemo(() => new Date(), [now.getMinutes()]); // stable within the minute
   const nextEvt = useMemo(() => nextEvent(events, now), [events, now]);
@@ -91,13 +92,18 @@ export default function FamilyHub() {
   return (
     <div className="fh-root">
       <div className="fh-app">
-        <TopBar now={now} familyName={settings.familyName} weather={settings.weather} />
-        <AppNav
-          page={page}
-          onChange={setPage}
+        <TopBar
+          now={now}
+          familyName={settings.familyName}
+          weather={weather}
           nextEvt={nextEvt}
           members={members}
+          page={page}
+          onChangePage={setPage}
           importCount={candidates.length}
+          onRename={editFamilyName}
+          onPhotoMode={sleep}
+          onReset={resetDemo}
         />
 
         {page === "dashboard" && (
@@ -155,20 +161,6 @@ export default function FamilyHub() {
           />
         )}
 
-        <footer className="fh-footer">
-          <span>Supabase · 实时同步 · 原型演示</span>
-          <div className="fh-footer-actions">
-            <button type="button" onClick={editFamilyName}>
-              Rename family
-            </button>
-            <button type="button" onClick={sleep}>
-              Photo mode
-            </button>
-            <button type="button" onClick={resetDemo}>
-              Reset demo
-            </button>
-          </div>
-        </footer>
       </div>
 
       {modal && (
