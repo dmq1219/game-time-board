@@ -1881,3 +1881,80 @@ button:focus-visible {
 .fh-inbox .fh-review-head h3 {
   color: #b51e5b;
 }
+
+/* ---- PIN gate (public access lock) ---- */
+.fh-pin-root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: var(--bg);
+}
+
+.fh-pin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 36px 40px;
+  min-width: 300px;
+}
+
+.fh-pin-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.fh-pin-sub {
+  font-size: 18px;
+  color: var(--ink-soft);
+}
+
+.fh-pin-input {
+  width: 220px;
+  text-align: center;
+  font-size: 34px;
+  letter-spacing: 12px;
+  font-weight: 700;
+  padding: 10px 12px;
+  border: 2px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.fh-pin-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.fh-pin-input-err {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.fh-pin-err {
+  color: var(--danger);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.fh-pin-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--primary);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.fh-pin-btn:active {
+  transform: translateY(1px);
+}
