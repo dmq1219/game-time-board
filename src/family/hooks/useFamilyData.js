@@ -86,6 +86,48 @@ export function useFamilyData() {
   const stateRef = useRef({});
   stateRef.current = { members, events, chores, todos, grocery, meals, photos, rewards, settings };
 
+  // Pull the whole hub from Supabase and replace local state with DB truth.
+  // Used on mount and on a periodic timer as a self-healing safety net (so a
+  // dropped realtime socket can't leave a long-running kiosk showing stale data).
+  const fetchAll = useCallback(async () => {
+    if (!hasSupabase) return;
+    const [
+      membersRes,
+      eventsRes,
+      choresRes,
+      todosRes,
+      groceryRes,
+      mealsRes,
+      photosRes,
+      rewardsRes,
+      settingsRes,
+      candidatesRes
+    ] = await Promise.all([
+      supabase.from("family_members").select("*"),
+      supabase.from("events").select("*"),
+      supabase.from("chores").select("*"),
+      supabase.from("todos").select("*"),
+      supabase.from("grocery").select("*"),
+      supabase.from("meals").select("*").order("day"),
+      supabase.from("photos").select("*"),
+      supabase.from("rewards").select("*"),
+      supabase.from("settings").select("value").eq("key", SETTINGS_KEY).maybeSingle(),
+      supabase.from("import_candidates").select("*").eq("status", "pending")
+    ]);
+
+    const m = (membersRes.data || []).map(MAPPERS.family_members.fromRow);
+    setMembers(m.length ? m : FAMILY_MEMBERS);
+    setEvents((eventsRes.data || []).map(MAPPERS.events.fromRow));
+    setChores((choresRes.data || []).map(MAPPERS.chores.fromRow));
+    setTodos((todosRes.data || []).map(MAPPERS.todos.fromRow));
+    setGrocery((groceryRes.data || []).map(MAPPERS.grocery.fromRow));
+    setMeals((mealsRes.data || []).map(MAPPERS.meals.fromRow));
+    setPhotos((photosRes.data || []).map(MAPPERS.photos.fromRow));
+    setRewards(rewardsFromRows(rewardsRes.data));
+    setSettings(settingsRes.data?.value || DEFAULT_SETTINGS);
+    setCandidates((candidatesRes.data || []).map(MAPPERS.import_candidates.fromRow));
+  }, []);
+
   // ---- Initial load + seed ----
   useEffect(() => {
     if (!hasSupabase) {
@@ -113,50 +155,24 @@ export function useFamilyData() {
         .eq("key", SETTINGS_KEY)
         .maybeSingle();
       if (!settingsRow) await seedDatabase();
-
-      const [
-        membersRes,
-        eventsRes,
-        choresRes,
-        todosRes,
-        groceryRes,
-        mealsRes,
-        photosRes,
-        rewardsRes,
-        settingsRes,
-        candidatesRes
-      ] = await Promise.all([
-        supabase.from("family_members").select("*"),
-        supabase.from("events").select("*"),
-        supabase.from("chores").select("*"),
-        supabase.from("todos").select("*"),
-        supabase.from("grocery").select("*"),
-        supabase.from("meals").select("*").order("day"),
-        supabase.from("photos").select("*"),
-        supabase.from("rewards").select("*"),
-        supabase.from("settings").select("value").eq("key", SETTINGS_KEY).maybeSingle(),
-        supabase.from("import_candidates").select("*").eq("status", "pending")
-      ]);
       if (cancelled) return;
-
-      const m = (membersRes.data || []).map(MAPPERS.family_members.fromRow);
-      setMembers(m.length ? m : FAMILY_MEMBERS);
-      setEvents((eventsRes.data || []).map(MAPPERS.events.fromRow));
-      setChores((choresRes.data || []).map(MAPPERS.chores.fromRow));
-      setTodos((todosRes.data || []).map(MAPPERS.todos.fromRow));
-      setGrocery((groceryRes.data || []).map(MAPPERS.grocery.fromRow));
-      setMeals((mealsRes.data || []).map(MAPPERS.meals.fromRow));
-      setPhotos((photosRes.data || []).map(MAPPERS.photos.fromRow));
-      setRewards(rewardsFromRows(rewardsRes.data));
-      setSettings(settingsRes.data?.value || DEFAULT_SETTINGS);
-      setCandidates((candidatesRes.data || []).map(MAPPERS.import_candidates.fromRow));
-      setReady(true);
+      await fetchAll();
+      if (!cancelled) setReady(true);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [fetchAll]);
+
+  // ---- Safety-net refetch (covers realtime gaps on a long-running kiosk) ----
+  useEffect(() => {
+    if (!hasSupabase) return undefined;
+    const id = setInterval(() => {
+      fetchAll().catch((e) => console.error("[familyHub] refetch failed:", e?.message));
+    }, 120000); // every 2 minutes
+    return () => clearInterval(id);
+  }, [fetchAll]);
 
   // ---- Realtime ----
   useEffect(() => {
