@@ -97,7 +97,8 @@ button:focus-visible {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: clamp(8px, 1vw, 14px);
-  height: clamp(148px, 19vh, 210px);
+  /* Taller now that the Today timeline only shows a 4-hour window. */
+  height: clamp(210px, 30vh, 320px);
 }
 
 /* Full-page sections (meals / import / photos) scroll within the content row. */
@@ -427,7 +428,7 @@ button:focus-visible {
    instead of crushing the timeline. */
 .fh-day-hours {
   position: relative;
-  height: max(100%, 340px);
+  height: max(100%, 150px);
 }
 
 .fh-hour-row {
@@ -471,6 +472,7 @@ button:focus-visible {
   display: flex;
   overflow: hidden;
   text-align: left;
+  padding: 0;
   border: 2px solid;
   /* Pill shape: both ends are full semicircles so the round avatar nests into
      the left cap. */
@@ -517,19 +519,20 @@ button:focus-visible {
   text-overflow: ellipsis;
 }
 
-/* Member avatar nested into the pill's left semicircle (black circular frame).
-   Stretches to the bar height so it fills the rounded left end exactly; capped
-   so long multi-hour events don't get an oversized circle. */
+/* Member avatar fills the pill's left semicircle exactly: a stretched square
+   (height = bar height) clipped to a circle, flush against the left cap.
+   Rendered as a background image so it reliably stretches (an <img> would not). */
 .fh-event-avatar {
   flex: none;
-  align-self: center;
-  width: clamp(32px, 3.2vw, 38px);
-  height: clamp(32px, 3.2vw, 38px);
-  margin-left: 2px;
+  align-self: stretch;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  width: auto;
   border-radius: 50%;
-  border: 2px solid var(--ink);
-  object-fit: cover;
-  background: #fff;
+  background-color: #fff;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
 }
 
 /* ------- week view ------- */
@@ -1897,7 +1900,7 @@ button:focus-visible {
    (a fixed min-height here is what used to push content past the viewport). */
 @media (max-height: 800px) {
   .fh-bottom {
-    height: clamp(138px, 18vh, 188px);
+    height: clamp(180px, 26vh, 250px);
   }
   .fh-week,
   .fh-month {
@@ -1926,7 +1929,7 @@ button:focus-visible {
     grid-template-columns: 1fr;
   }
   .fh-calendar {
-    min-height: 480px;
+    min-height: 320px;
   }
   .fh-members {
     max-height: none;

@@ -41,6 +41,7 @@ export default function Dashboard({
           onViewChange={setView}
           cursor={cursor}
           onCursorChange={setCursor}
+          now={today}
           events={events}
           members={members}
           onEventClick={onEventClick}

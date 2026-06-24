@@ -37,6 +37,7 @@ export default function CalendarPanel({
   onViewChange,
   cursor,
   onCursorChange,
+  now,
   events,
   members,
   onEventClick,
@@ -99,6 +100,7 @@ export default function CalendarPanel({
         {view === "today" && (
           <DayView
             date={cursor}
+            now={now}
             events={events}
             members={members}
             onEventClick={onEventClick}
