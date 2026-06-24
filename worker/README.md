@@ -1,13 +1,13 @@
 # Family Hub — Gmail → Supabase sync worker
 
 A Cloudflare Worker that, on a schedule, reads your Gmail, extracts events with
-Claude, and writes them to Supabase as **pending review candidates**. The iPad
+DeepSeek, and writes them to Supabase as **pending review candidates**. The iPad
 app shows them in its Magic Import inbox (in real time) for a human to approve —
 nothing hits the calendar automatically.
 
 ```
 Gmail  ──(Cron poll, every 15 min)──▶  Cloudflare Worker
-                                          │  Claude Haiku extracts events
+                                          │  DeepSeek extracts events
                                           ▼
                                    Supabase import_candidates (status: pending)
                                           │  Supabase realtime
@@ -24,10 +24,10 @@ nothing to renew. Trade-off: up to ~15 min latency (tune the cron).
 | --- | --- | --- |
 | Cloudflare Workers | 100k requests/day | ~96 cron runs/day |
 | Gmail API | free | a few calls/run |
-| Claude Haiku 4.5 | pay-as-you-go | ~$0.01 per email parsed; pennies/month |
+| DeepSeek (deepseek-chat) | pay-as-you-go | well under $0.01 per email; pennies/month |
 | Supabase | 500MB + realtime | tiny |
 
-The only non-free piece is the Claude API (a few cents a month at household volume).
+The only non-free piece is the DeepSeek API (a few cents a month at household volume).
 
 ## One-time setup
 
@@ -49,10 +49,12 @@ The only non-free piece is the Claude API (a few cents a month at household volu
    ```
    Approve read-only Gmail access in the browser; copy the printed refresh token.
 
-### 2. Claude API key
+### 2. DeepSeek API key
 
-[console.anthropic.com](https://console.anthropic.com) → API Keys → create one
-(`sk-ant-…`). Haiku usage is about a cent per email.
+[platform.deepseek.com](https://platform.deepseek.com) → API keys → create one
+(`sk-…`). `deepseek-chat` is OpenAI-compatible and costs a fraction of a cent
+per email. (To use a different OpenAI-compatible provider, set `DEEPSEEK_BASE_URL`
+and `DEEPSEEK_MODEL` accordingly.)
 
 ### 3. Supabase service-role key
 
@@ -70,13 +72,13 @@ npx wrangler login                 # one-time Cloudflare auth
 npx wrangler secret put GOOGLE_CLIENT_ID
 npx wrangler secret put GOOGLE_CLIENT_SECRET
 npx wrangler secret put GOOGLE_REFRESH_TOKEN
-npx wrangler secret put ANTHROPIC_API_KEY
+npx wrangler secret put DEEPSEEK_API_KEY
 npx wrangler secret put SUPABASE_SERVICE_KEY
 
 npx wrangler deploy
 ```
 
-`SUPABASE_URL`, `ANTHROPIC_MODEL`, `GMAIL_QUERY`, and `MAX_MESSAGES` live in
+`SUPABASE_URL`, `DEEPSEEK_MODEL`, `GMAIL_QUERY`, and `MAX_MESSAGES` live in
 [wrangler.toml](wrangler.toml) — tune `GMAIL_QUERY` to your school's senders.
 
 ## Test it
@@ -107,6 +109,7 @@ section with a nav badge. Watch live logs with `npx wrangler tail`.
 
 - **Latency vs cost:** change `crons` in `wrangler.toml` (e.g. `*/5 * * * *`).
 - **What gets scanned:** `GMAIL_QUERY` (Gmail search syntax). Narrow it to your
-  school domains/labels to cut Claude calls. A Gmail label + filter is ideal:
+  school domains/labels to cut model calls. A Gmail label + filter is ideal:
   label school mail, then set `GMAIL_QUERY = "newer_than:2d label:school"`.
-- **Model:** `ANTHROPIC_MODEL` (defaults to `claude-haiku-4-5`).
+- **Model / provider:** `DEEPSEEK_MODEL` (defaults to `deepseek-chat`); point
+  `DEEPSEEK_BASE_URL` at any OpenAI-compatible endpoint to swap providers.

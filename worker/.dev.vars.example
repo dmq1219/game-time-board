@@ -3,5 +3,5 @@
 GOOGLE_CLIENT_ID=your-oauth-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-oauth-client-secret
 GOOGLE_REFRESH_TOKEN=token-from-get-refresh-token-script
-ANTHROPIC_API_KEY=sk-ant-...
-SUPABASE_SERVICE_KEY=your-service-role-key
+DEEPSEEK_API_KEY=sk-...
+SUPABASE_SERVICE_KEY=your-service-role-key-or-anon-key-if-RLS-disabled
