@@ -447,6 +447,9 @@ button:focus-visible {
   color: var(--ink-soft);
   text-align: right;
   flex: none;
+  /* Never wrap "10:00 AM" onto two lines — that pushes labels into each other
+     on narrow (portrait) widths. */
+  white-space: nowrap;
 }
 
 .fh-hour-line {
@@ -1879,17 +1882,58 @@ button:focus-visible {
   }
 }
 
-/* Portrait fallback (not the target, but keep it usable). */
+/* Portrait-first: the page grows and scrolls naturally instead of cramming a
+   landscape dashboard into one screen. Each section gets a real height. */
 @media (orientation: portrait) {
+  .fh-app {
+    height: auto;
+    min-height: 100dvh;
+    grid-template-rows: auto auto;
+  }
+  .fh-dashboard {
+    grid-template-rows: auto auto;
+  }
+
+  /* Stack calendar over the member list, each at a usable size. */
   .fh-main {
     grid-template-columns: 1fr;
   }
-  .fh-members {
-    max-height: 280px;
+  .fh-calendar {
+    min-height: 480px;
   }
+  .fh-members {
+    max-height: none;
+    overflow: visible;
+  }
+  .fh-members-list {
+    overflow: visible;
+  }
+
+  /* Panels flow into as many columns as the width allows. */
   .fh-bottom {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     height: auto;
+  }
+
+  /* Top bar reflows to two rows so Next up / weather / clock stop colliding:
+     row 1 = brand + weather/clock, row 2 = Next up full width. */
+  .fh-topbar {
+    grid-template-columns: 1fr auto;
+    row-gap: 8px;
+  }
+  .fh-topbar-left {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .fh-topbar-right {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .fh-nextup {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
   }
 }
 
