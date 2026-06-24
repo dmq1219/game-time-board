@@ -1,0 +1,7 @@
+# Copy to .dev.vars for local `wrangler dev`. NEVER commit .dev.vars.
+# In production these are set with: wrangler secret put NAME
+GOOGLE_CLIENT_ID=your-oauth-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-oauth-client-secret
+GOOGLE_REFRESH_TOKEN=token-from-get-refresh-token-script
+ANTHROPIC_API_KEY=sk-ant-...
+SUPABASE_SERVICE_KEY=your-service-role-key

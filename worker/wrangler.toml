@@ -1,0 +1,19 @@
+name = "family-hub-gmail-sync"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Poll Gmail every 15 minutes. Adjust to taste (min granularity is 1 minute).
+[triggers]
+crons = ["*/15 * * * *"]
+
+# Non-secret config. Secrets (GOOGLE_*, ANTHROPIC_API_KEY, SUPABASE_SERVICE_KEY)
+# are set with `wrangler secret put NAME` — never commit them.
+[vars]
+SUPABASE_URL = "https://vijbxabsbmyeffunzeyw.supabase.co"
+ANTHROPIC_MODEL = "claude-haiku-4-5"
+# Gmail search applied each run. Tune to your school's senders/keywords.
+# Examples: "newer_than:2d label:school", "from:(iusd.org) newer_than:3d"
+GMAIL_QUERY = "newer_than:2d (subject:(field trip OR concert OR \"picture day\" OR recital OR \"parent teacher\" OR permission OR \"school\" OR registration OR rehearsal OR performance) OR from:(iusd.org OR .edu))"
+# Max messages to scan per run (keeps each invocation fast and cheap).
+MAX_MESSAGES = "15"
