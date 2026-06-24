@@ -211,6 +211,14 @@ export function newId(prefix = "id") {
   return uid(prefix);
 }
 
+// Members whose cropped avatar lives in /public/avatars/<id>.png. Derived from
+// the stable member id so we don't need an avatar column in Supabase.
+const AVATAR_IDS = new Set(["dad", "mom", "emma", "liam", "noah", "zoe"]);
+
+export function memberAvatar(id) {
+  return AVATAR_IDS.has(id) ? `${import.meta.env.BASE_URL}avatars/${id}.png` : null;
+}
+
 export function memberById(members, id) {
   return members.find((m) => m.id === id);
 }

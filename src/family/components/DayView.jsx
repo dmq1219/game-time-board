@@ -1,6 +1,6 @@
 import React from "react";
 import { toISODate, timeToMinutes, formatTime, sortEvents } from "../utils/calendar";
-import { memberColor, memberById } from "../data/familyData";
+import { memberColor, memberById, memberAvatar } from "../data/familyData";
 
 const DAY_START = 6; // 6 AM
 const DAY_END = 22; // 10 PM
@@ -110,6 +110,7 @@ export default function DayView({ date, events, members, onEventClick, onSlotCli
             {timed.map(({ e, s, en, lane, cols }) => {
               const member = memberById(members, e.memberId);
               const color = member?.color ?? "#6b7280";
+              const avatar = memberAvatar(e.memberId);
               return (
                 <button
                   key={e.id}
@@ -126,6 +127,9 @@ export default function DayView({ date, events, members, onEventClick, onSlotCli
                   onClick={() => onEventClick(e)}
                 >
                   <span className="fh-event-bar" style={{ background: color }} />
+                  {avatar && (
+                    <img className="fh-event-avatar" src={avatar} alt="" loading="lazy" />
+                  )}
                   <span className="fh-event-body">
                     <strong style={{ color }}>{formatTime(e.start)}</strong>
                     <span className="fh-event-title">{e.title}</span>
