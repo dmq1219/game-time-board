@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 const PAGES = [
   { id: "dashboard", label: "Dashboard", cn: "首页" },
   { id: "meals", label: "Meal Plan", cn: "餐食" },
-  { id: "import", label: "Import", cn: "导入" },
+  { id: "import", label: "邮件导入", cn: "学校邮件" },
   { id: "photos", label: "Photos", cn: "照片" }
 ];
 
@@ -61,11 +61,6 @@ export default function SettingsMenu({
             d="M19.14 12.94a7.49 7.49 0 0 0 .05-.94 7.49 7.49 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.34 8.2a.5.5 0 0 0 .12.64l2.03 1.58c-.03.31-.05.62-.05.94 0 .32.02.63.05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.23.4.31.6.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.2.09.47.01.6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"
           />
         </svg>
-        {importCount > 0 && (
-          <span className="fh-gear-badge" aria-label={`${importCount} pending`}>
-            {importCount}
-          </span>
-        )}
       </button>
 
       {open && (

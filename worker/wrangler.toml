@@ -3,9 +3,10 @@ main = "src/index.js"
 compatibility_date = "2026-06-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Poll Gmail every 15 minutes. Adjust to taste (min granularity is 1 minute).
+# Poll Gmail twice a day (cron is UTC): 15:00 UTC ≈ 8am Pacific, 03:00 UTC ≈ 8pm
+# Pacific. GMAIL_QUERY's "newer_than:2d" comfortably covers the gap between runs.
 [triggers]
-crons = ["*/15 * * * *"]
+crons = ["0 3,15 * * *"]
 
 # Non-secret config. Secrets (GOOGLE_*, DEEPSEEK_API_KEY, SUPABASE_SERVICE_KEY)
 # are set with `wrangler secret put NAME` — never commit them.

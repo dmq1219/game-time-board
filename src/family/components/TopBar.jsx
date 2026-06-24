@@ -40,6 +40,23 @@ export default function TopBar({
             </button>
           </h1>
         </div>
+        <button
+          type="button"
+          className={`fh-bell${importCount > 0 ? " has-news" : ""}`}
+          onClick={() => onChangePage("import")}
+          aria-label={importCount > 0 ? `邮件提醒：${importCount} 条新安排` : "邮件提醒"}
+          title="邮件提醒"
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 22a2.4 2.4 0 0 0 2.4-2.4H9.6A2.4 2.4 0 0 0 12 22Zm7-5.3-1.4-1.5v-4a5.6 5.6 0 0 0-4.2-5.6V5a1.4 1.4 0 1 0-2.8 0v.6A5.6 5.6 0 0 0 6.4 11v4L5 16.7a.8.8 0 0 0 .6 1.3h12.8a.8.8 0 0 0 .6-1.3Z"
+            />
+          </svg>
+          {importCount > 0 && (
+            <span className="fh-bell-badge" aria-hidden="true">{importCount}</span>
+          )}
+        </button>
         <SettingsMenu
           page={page}
           onChangePage={onChangePage}

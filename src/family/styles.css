@@ -2252,3 +2252,96 @@ button:focus-visible {
   margin: 6px 4px;
   background: var(--line);
 }
+
+/* ---- Mail bell (right of the logo) ---- */
+.fh-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(40px, 4vw, 50px);
+  height: clamp(40px, 4vw, 50px);
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.fh-bell:hover {
+  color: var(--primary);
+  border-color: var(--line-strong);
+}
+
+/* Bell lights up when there are new email items waiting. */
+.fh-bell.has-news {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.fh-bell-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(224, 69, 123, 0.45);
+}
+
+/* ---- Email-import: empty state + optional manual section ---- */
+.fh-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: clamp(24px, 4vw, 48px) 20px;
+  margin: 8px 0 18px;
+  background: var(--bg);
+  border-radius: var(--radius);
+}
+
+.fh-empty-icon {
+  font-size: clamp(40px, 6vw, 64px);
+}
+
+.fh-empty strong {
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 900;
+}
+
+.fh-empty p {
+  margin: 0;
+  max-width: 36em;
+  font-size: clamp(14px, 1.4vw, 18px);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.fh-manual {
+  margin-top: 8px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 4px 16px;
+}
+
+.fh-manual > summary {
+  padding: 12px 4px;
+  font-size: clamp(15px, 1.5vw, 18px);
+  font-weight: 800;
+  color: var(--ink-soft);
+  cursor: pointer;
+  list-style: revert;
+}
+
+.fh-manual[open] > summary {
+  color: var(--ink);
+}

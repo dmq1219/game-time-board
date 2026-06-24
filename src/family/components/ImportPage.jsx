@@ -11,18 +11,18 @@ function ReviewCard({ cand, members, duplicate, onChange, onApprove, onReject })
     <div className={`fh-review-card${duplicate ? " is-dupe" : ""}`}>
       {duplicate && (
         <div className="fh-dupe-badge">
-          ⚠ Possible duplicate — already on {duplicate.date}
-          {duplicate.start ? ` at ${formatTime(duplicate.start)}` : ""}
+          ⚠ 可能重复了 — 日历上已经有 {duplicate.date}
+          {duplicate.start ? ` ${formatTime(duplicate.start)}` : ""} 的安排
         </div>
       )}
 
       <label className="fh-field">
-        <span>Title 标题</span>
+        <span>这是什么活动</span>
         <input value={cand.title} onChange={(e) => set({ title: e.target.value })} />
       </label>
 
       <div className="fh-field">
-        <span>Assign to 分配 · 颜色</span>
+        <span>这是谁的</span>
         <div className="fh-member-pick">
           {members.map((m) => (
             <button
@@ -40,33 +40,33 @@ function ReviewCard({ cand, members, duplicate, onChange, onApprove, onReject })
 
       <div className="fh-field-row">
         <label className="fh-field">
-          <span>Date 日期</span>
+          <span>哪一天</span>
           <input type="date" value={cand.date} onChange={(e) => set({ date: e.target.value })} />
         </label>
         <label className="fh-field">
-          <span>Start 开始</span>
+          <span>几点开始</span>
           <input type="time" value={cand.start} onChange={(e) => set({ start: e.target.value })} />
         </label>
         <label className="fh-field">
-          <span>End 结束</span>
+          <span>几点结束</span>
           <input type="time" value={cand.end} onChange={(e) => set({ end: e.target.value })} />
         </label>
       </div>
 
       <div className="fh-field-row">
         <label className="fh-field">
-          <span>Location 地点</span>
+          <span>在哪里</span>
           <input value={cand.location} onChange={(e) => set({ location: e.target.value })} />
         </label>
         <label className="fh-field">
-          <span>Notes 备注</span>
+          <span>备注</span>
           <input value={cand.notes} onChange={(e) => set({ notes: e.target.value })} />
         </label>
       </div>
 
       <div className="fh-modal-actions">
         <button type="button" className="fh-btn-danger" onClick={() => onReject(cand.tempId)}>
-          Reject
+          ✕ 不需要
         </button>
         <button
           type="button"
@@ -74,7 +74,7 @@ function ReviewCard({ cand, members, duplicate, onChange, onApprove, onReject })
           disabled={!cand.title.trim() || !cand.date}
           onClick={() => onApprove(cand)}
         >
-          ✓ Approve → calendar
+          ✓ 加入日历
         </button>
       </div>
     </div>
@@ -98,7 +98,7 @@ export default function ImportPage({ members, events, candidates: remote = [], o
   const extractEmail = () => {
     const found = PARSERS.email.parse(text, members);
     setCandidates(found);
-    setInfo(found.length ? `Found ${found.length} event(s) — review below.` : "No events detected. Try adding a date.");
+    setInfo(found.length ? `找到 ${found.length} 条活动,请在下面确认。` : "没找到活动。试着补上日期(比如 6月20日)再找一次。");
   };
 
   const handleFile = (e) => {
@@ -110,8 +110,7 @@ export default function ImportPage({ members, events, candidates: remote = [], o
     } catch (err) {
       // Expected for v1 stubs — show the roadmap placeholder.
       setStubMsg(
-        `${source === "pdf" ? "PDF" : "Image"} parsing coming soon — “${file.name}” received. ` +
-          "The parser adapter is wired; real extraction (text/OCR/AI) lands next."
+        `${source === "pdf" ? "PDF" : "图片"}识别功能马上就来——已收到「${file.name}」。目前请先用「粘贴邮件」。`
       );
     }
     if (fileRef.current) fileRef.current.value = "";
@@ -133,20 +132,18 @@ export default function ImportPage({ members, events, candidates: remote = [], o
 
   return (
     <div className="fh-page fh-import-page">
-      <h2 className="fh-page-title">Magic Import · 邮件 / PDF 转日历</h2>
+      <h2 className="fh-page-title">📧 邮件导入</h2>
       <p className="fh-muted">
-        Paste a school email (or upload a flyer). We extract events for you to review — nothing is
-        added to the calendar until you approve it.
+        系统每天自动查看学校邮箱,帮你把邮件里的活动找出来。下面的安排<strong>确认后才会加进日历</strong>,你不用自己抄。
       </p>
 
       {inbox.length > 0 && (
         <div className="fh-review fh-inbox">
           <div className="fh-review-head">
-            <h3>📬 Inbox · 来自 Gmail（自动同步） ({inbox.length})</h3>
+            <h3>📬 邮箱里找到 {inbox.length} 条新安排</h3>
           </div>
           <p className="fh-muted">
-            These arrived automatically from your email. Review and approve to add them to the
-            calendar.
+            这些是从你邮箱里自动找出来的。看一眼对不对,对就点「✓ 加入日历」,不需要就点「✕ 不需要」。
           </p>
           <div className="fh-review-list">
             {inbox.map((c) => (
@@ -164,60 +161,73 @@ export default function ImportPage({ members, events, candidates: remote = [], o
         </div>
       )}
 
-      <div className="fh-import-tabs">
-        {Object.values(PARSERS).map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            className={`fh-import-tab${source === p.id ? " active" : ""}`}
-            onClick={() => {
-              setSource(p.id);
-              setStubMsg("");
-            }}
-          >
-            {p.label}
-            {!p.ready && <span className="fh-soon">soon</span>}
-          </button>
-        ))}
-      </div>
+      {inbox.length === 0 && (
+        <div className="fh-empty">
+          <div className="fh-empty-icon">📭</div>
+          <strong>现在没有新的邮件安排</strong>
+          <p>系统每天早晚各查看一次学校邮箱。有新活动时,会自动出现在这里,左上角的小铃铛 🔔 也会亮起提醒你。</p>
+        </div>
+      )}
 
-      {source === "email" && (
-        <div className="fh-import-email">
-          <textarea
-            className="fh-import-textarea"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Paste the email text here…"
-            rows={8}
-          />
-          <div className="fh-import-controls">
-            <button type="button" className="fh-btn-ghost" onClick={() => setText(SAMPLE_EMAIL)}>
-              Load sample email
+      <details className="fh-manual">
+        <summary>手动添加(可选)</summary>
+        <p className="fh-muted">如果你手里有一封邮件,也可以自己粘贴进来,让系统帮你找出活动。</p>
+
+        <div className="fh-import-tabs">
+          {Object.values(PARSERS).map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className={`fh-import-tab${source === p.id ? " active" : ""}`}
+              onClick={() => {
+                setSource(p.id);
+                setStubMsg("");
+              }}
+            >
+              {p.cn}
+              {!p.ready && <span className="fh-soon">暂未开放</span>}
             </button>
-            <button type="button" className="fh-btn-primary" onClick={extractEmail} disabled={!text.trim()}>
-              ✨ Extract events
-            </button>
+          ))}
+        </div>
+
+        {source === "email" && (
+          <div className="fh-import-email">
+            <textarea
+              className="fh-import-textarea"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="把邮件文字粘贴到这里…"
+              rows={8}
+            />
+            <div className="fh-import-controls">
+              <button type="button" className="fh-btn-ghost" onClick={() => setText(SAMPLE_EMAIL)}>
+                看个例子
+              </button>
+              <button type="button" className="fh-btn-primary" onClick={extractEmail} disabled={!text.trim()}>
+                ✨ 找出活动
+              </button>
+            </div>
+            {info && <p className="fh-info">{info}</p>}
           </div>
-          {info && <p className="fh-info">{info}</p>}
-        </div>
-      )}
+        )}
 
-      {source !== "email" && (
-        <div className="fh-import-upload">
-          <input ref={fileRef} type="file" accept={source === "pdf" ? "application/pdf" : "image/*"} onChange={handleFile} />
-          <p className="fh-muted">
-            {source === "pdf" ? "Upload a PDF flyer or newsletter." : "Upload a photo of a flyer."}
-          </p>
-          {stubMsg && <div className="fh-stub">{stubMsg}</div>}
-        </div>
-      )}
+        {source !== "email" && (
+          <div className="fh-import-upload">
+            <input ref={fileRef} type="file" accept={source === "pdf" ? "application/pdf" : "image/*"} onChange={handleFile} />
+            <p className="fh-muted">
+              {source === "pdf" ? "上传一份 PDF 传单或通讯。" : "上传一张传单照片。"}
+            </p>
+            {stubMsg && <div className="fh-stub">{stubMsg}</div>}
+          </div>
+        )}
+      </details>
 
       {candidates.length > 0 && (
         <div className="fh-review">
           <div className="fh-review-head">
-            <h3>Review · 待确认事件 ({candidates.length})</h3>
+            <h3>请确认这 {candidates.length} 条</h3>
             <button type="button" className="fh-btn-primary" onClick={approveAll}>
-              Approve all
+              全部加入日历
             </button>
           </div>
           <div className="fh-review-list">
