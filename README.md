@@ -41,6 +41,13 @@ npm run dev
 | 游戏时间看板（原项目） | `/` (`index.html`) | 原有的行为管理 / 计时看板 |
 | **家庭中控日历** | **`/family.html`** | 本次新增的家庭中控屏 |
 
+## 线上地址（已部署）
+
+- **家庭中控（iPad 常驻入口）**：<https://family-hub-5rp.pages.dev/family>（Cloudflare Pages；Pages 会把 `/family.html` 跳到 `/family`）
+- **Gmail 同步 Worker**：`https://family-hub-gmail-sync.dmq1219.workers.dev`（Cron 每 15 分钟；`/run` 需 `RUN_TOKEN`，详见 [`worker/`](worker/README.md)）
+
+> ⚠️ **上线前须知**：构建会把 Supabase 的 anon key 打进公开 bundle，而当前 **RLS 关闭** —— 任何拿到 Pages 网址的人都能读写家庭数据。正式常驻前请**开启 RLS（或加访问口令）**。
+
 ## 技术栈说明（与需求的差异）
 
 需求里写的是 **Next.js + Tailwind**。但本仓库已经是一个可用的 **Vite + React PWA**，需求也注明「维护太难的话可以协调」。为了**不在同一个仓库里维护两套构建工具链**，家庭中控沿用了现有的 **Vite + React + 原生 CSS**，同样满足：可安装 PWA、可 Add to Home Screen、可部署 Vercel。后续若要迁移到 Next.js，组件与数据层（`src/family/`）可整体平移。
