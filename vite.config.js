@@ -6,10 +6,13 @@ export default defineConfig({
   base: "./",
   build: {
     rollupOptions: {
-      // Multi-page: the original screen-time board (index) + the family hub (family).
+      // Multi-page: the original screen-time board (index) + the family hub.
+      // Keep both /family.html and /family/ working so deployed links do not depend
+      // on host-specific rewrite rules.
       input: {
         index: "index.html",
-        family: "family.html"
+        familyLegacy: "family.html",
+        family: "family/index.html"
       },
       output: {
         // Hashed names avoid collisions between the two entries' shared chunks.
