@@ -33,11 +33,14 @@ export default function Screensaver({ now, photos, members, nextEvt, onWake }) {
     >
       {count === 0 && <div className="fh-slide active fh-slide-fallback" />}
       {ordered.map((p, i) => (
-        <div
+        // A real <img object-fit:cover> instead of a CSS background — some
+        // tablet browsers mis-render background-size:cover (leaving the photo
+        // at natural size with black bars). kb0..3 vary the zoom/pan direction.
+        <img
           key={p.id}
-          // kb0..3 give each photo a different slow zoom/pan direction.
           className={`fh-slide kb${i % 4}${i === safeIndex ? " active" : ""}`}
-          style={{ backgroundImage: `url(${p.src})` }}
+          src={p.src}
+          alt=""
         />
       ))}
 
@@ -67,7 +70,6 @@ export default function Screensaver({ now, photos, members, nextEvt, onWake }) {
           </div>
         )}
 
-        <p className="fh-saver-hint">Tap anywhere to return · 轻触返回</p>
       </div>
 
       {place && (place.en || place.zh) && (
