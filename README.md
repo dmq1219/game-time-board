@@ -39,11 +39,11 @@ npm run dev
 | 页面 | 路径 | 说明 |
 | --- | --- | --- |
 | 游戏时间看板（原项目） | `/` (`index.html`) | 原有的行为管理 / 计时看板 |
-| **家庭中控日历** | **`/family.html`** | 本次新增的家庭中控屏 |
+| **家庭中控日历** | **`/family/`**（兼容 `/family.html`） | 本次新增的家庭中控屏 |
 
 ## 线上地址（已部署）
 
-- **家庭中控（iPad 常驻入口）**：<https://family-hub-5rp.pages.dev/family>（Cloudflare Pages；Pages 会把 `/family.html` 跳到 `/family`）
+- **家庭中控（iPad 常驻入口）**：<https://family-hub-5rp.pages.dev/family/>（兼容旧地址 `/family.html`）
 - **Gmail 同步 Worker**：`https://family-hub-gmail-sync.dmq1219.workers.dev`（Cron 每 15 分钟；`/run` 需 `RUN_TOKEN`，详见 [`worker/`](worker/README.md)）
 
 > 🔒 **访问门禁（已加）**：线上构建配置了 `VITE_FAMILY_PIN`，进 `/family` 需先输入 PIN（验证后存 `localStorage`，kiosk 不必每次重输）。这挡住孩子和路人，但**是应用层门禁**——Supabase anon key 仍在公开 bundle 里，懂技术的人绕过前端仍可直连数据库。
@@ -86,8 +86,8 @@ npm run dev
 ### 三个核心模块
 
 **1) Photo Screensaver 照片屏保** — 闲置 **3 分钟**（`settings.screensaverMinutes` 可配）后自动进入电子相框：全屏轮播照片、大时钟、今天日期、**下一条重要事件**；**轻触任意处返回**。
-- **Photos 管理页**：上传（多选，自动压缩到 ≤1280px 存进 localStorage）、收藏 ★（收藏优先轮播）、删除、立即预览屏保。
-- 第一版自带 `/public/photos/` 5 张示例图；上传的照片存在 `familyHub.photos`。
+- **Photos 管理页**：上传（多选，自动压缩到 ≤1280px；接入 Supabase 时优先写入 Storage，便于跨设备同步）、收藏 ★（收藏优先轮播）、删除、立即预览屏保。
+- 第一版自带 `/public/photos/` 5 张示例图；旧版上传过的照片可能仍以 base64 形式存在 `photos.src`，新版会在可用时后台迁移到 Storage。
 
 **2) Meal Planning 每周餐食** — `Meal Plan` 页按 Monday–Sunday × Breakfast / Lunch / Dinner 展示，每格点开可编辑菜名、备注、食材。
 - **自动生成 Grocery List**：每个 meal 的食材可一键「Add to shopping list」，自动去重并带来源标签（如 `Tue · Dinner`）；也能手动增删。Grocery 支持 checkbox。
@@ -135,7 +135,7 @@ npm run dev
 ```bash
 npm install
 npm run dev
-# 浏览器打开 http://localhost:5173/family.html
+# 浏览器打开 http://localhost:5173/family/
 ```
 
 横屏目标分辨率已适配：1024×768、1180×820、1366×1024。
@@ -146,13 +146,13 @@ npm run dev
 
 1. 在 [vercel.com](https://vercel.com) 新建 Project，导入这个 Git 仓库。
 2. Framework Preset 选 **Vite**（或保持 Other），**Build Command** `npm run build`，**Output Directory** `dist`。
-3. Deploy。完成后家庭中控的地址是 `https://<your-project>.vercel.app/family.html`。
+3. Deploy。完成后家庭中控的地址是 `https://<your-project>.vercel.app/family/`（旧地址 `.../family.html` 也会跳转）。
 
 > 也可用 CLI：`npm i -g vercel && vercel`（首次按提示选 build `npm run build` / output `dist`）。原 GitHub Pages 部署不受影响，两个页面会一起构建。
 
 ## 在 iPad 上全屏使用（Kiosk Mode）
 
-1. **打开页面**：用 iPad **Safari** 打开部署后的 `…/family.html`（必须是 HTTPS）。
+1. **打开页面**：用 iPad **Safari** 打开部署后的 `…/family/`（必须是 HTTPS；旧 `…/family.html` 也可用）。
 2. **Add to Home Screen**：点分享按钮 → 「添加到主屏幕」。从主屏图标启动即为**全屏无地址栏**（已配置 `apple-mobile-web-app-capable` + landscape manifest）。
 3. **保持常亮**：设置 → 显示与亮度 → 自动锁定，调长或设为「永不」（插电时更省心，但更耗电）。
 4. **Guided Access 单应用锁定**（防止孩子退出去玩别的）：
