@@ -1,10 +1,11 @@
-// Service worker for both entries (index.html + family.html).
+// Service worker for both entries (index.html + family routes).
 // App shell is precached resiliently (a single missing file can't abort install);
 // hashed Vite assets are cached at runtime on first fetch.
-const CACHE_NAME = "game-time-board-v11";
+const CACHE_NAME = "game-time-board-v12";
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./family/",
   "./family.html",
   "./manifest.webmanifest",
   "./family-manifest.webmanifest",
@@ -13,7 +14,7 @@ const APP_SHELL = [
 ];
 
 const INDEX_URL = new URL("./index.html", self.registration.scope).href;
-const FAMILY_URL = new URL("./family.html", self.registration.scope).href;
+const FAMILY_URL = new URL("./family/", self.registration.scope).href;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
