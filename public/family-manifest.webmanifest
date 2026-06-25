@@ -1,0 +1,25 @@
+{
+  "name": "Family Hub · 家庭中控",
+  "short_name": "Family Hub",
+  "description": "Offline-first family command center: calendar, chores, lists, meal plan, and screen-time rewards.",
+  "start_url": "./family/",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#f4f6fb",
+  "theme_color": "#f4f6fb",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "family-hub-gmail-sync",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker: polls Gmail on a schedule, extracts events with DeepSeek, writes review candidates to Supabase.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "get-token": "node scripts/get-refresh-token.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.42.0"
+  }
+}

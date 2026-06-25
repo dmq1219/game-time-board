@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000">
+  <defs>
+    <linearGradient id="mtn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cfe8ff"/>
+      <stop offset="1" stop-color="#eef6ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#mtn)"/>
+  <circle cx="380" cy="240" r="80" fill="#fff7d6"/>
+  <path d="M0 760 L420 360 L760 760 Z" fill="#7d97b5"/>
+  <path d="M420 360 L520 470 L470 520 L560 600 L420 600 Z" fill="#ffffff" opacity="0.85"/>
+  <path d="M640 760 L1080 300 L1520 760 Z" fill="#5f7a98"/>
+  <path d="M1080 300 L1180 430 L1120 480 L1220 560 L1080 560 Z" fill="#ffffff" opacity="0.85"/>
+  <rect x="0" y="760" width="1600" height="240" fill="#3f5d44"/>
+  <text x="60" y="940" font-family="Inter, sans-serif" font-size="44" font-weight="800" fill="#ffffff" opacity="0.9">Snow Trip</text>
+</svg>

@@ -1,0 +1,2437 @@
+/* =========================================================================
+   Family Hub — iPad family command-center calendar (kiosk / landscape)
+   Big type, strong contrast, no clutter. Tuned for 1024x768 → 1366x1024.
+   ========================================================================= */
+
+:root {
+  --ink: #131a24;
+  --ink-soft: #51607a;
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --line: #dce3ee;
+  --line-strong: #c3cee0;
+  --primary: #2f6fed;
+  --primary-soft: #e7efff;
+  --danger: #e0457b;
+  --danger-soft: #fdeaf1;
+  --ok: #11a37f;
+  --shadow: 0 10px 30px rgba(19, 26, 36, 0.1);
+  --radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input {
+  border: 2px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 10px 12px;
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 3px solid rgba(47, 111, 237, 0.4);
+  outline-offset: 2px;
+}
+
+/* ----------------------------------------------------------------- layout */
+.fh-root {
+  height: 100%;
+}
+
+.fh-app {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(6px, 1vw, 12px);
+  height: 100dvh;
+  padding: clamp(8px, 1.2vw, 16px);
+}
+
+/* Dashboard owns its own calendar(1fr) + panels(auto) split. */
+.fh-dashboard {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(8px, 1.2vw, 14px);
+  min-height: 0;
+}
+
+.fh-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 23vw, 360px);
+  gap: clamp(10px, 1.4vw, 16px);
+  min-height: 0;
+}
+
+.fh-bottom {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(8px, 1vw, 14px);
+  /* Taller now that the Today timeline only shows a 4-hour window. */
+  height: clamp(210px, 30vh, 320px);
+}
+
+/* Full-page sections (meals / import / photos) scroll within the content row. */
+.fh-page {
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(14px, 2vw, 26px);
+}
+
+.fh-page-title {
+  margin: 0 0 6px;
+  font-size: clamp(22px, 2.6vw, 34px);
+  font-weight: 900;
+}
+
+.fh-muted {
+  margin: 0 0 14px;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.fh-error {
+  color: var(--danger);
+  font-weight: 800;
+}
+
+.fh-info {
+  margin: 10px 0 0;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 800;
+  color: var(--ok);
+}
+
+.fh-link-btn {
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* ------------------------------------------------------------------ topbar */
+.fh-topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(14px, 2vw, 30px);
+  padding: clamp(7px, 1vw, 14px) clamp(16px, 2vw, 26px);
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.fh-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.4vw, 18px);
+}
+
+.fh-brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.fh-eyebrow {
+  margin: 0 0 4px;
+  font-size: clamp(11px, 1vw, 13px);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.fh-family-name {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 42px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* The board name doubles as a "back to home" link into the Dashboard. */
+.fh-home-btn {
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fh-today-date {
+  margin: 6px 0 0;
+  font-size: clamp(15px, 1.5vw, 21px);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.fh-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 28px);
+}
+
+.fh-weather {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fh-clock-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-left: clamp(14px, 2vw, 26px);
+  border-left: 2px solid var(--line);
+}
+
+.fh-clock-date {
+  margin: 2px 0 0;
+  font-size: clamp(11px, 1.1vw, 14px);
+  font-weight: 700;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.fh-weather-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.fh-weather-text strong {
+  font-size: clamp(22px, 2.4vw, 32px);
+  font-weight: 900;
+}
+
+.fh-weather-text span {
+  font-size: clamp(12px, 1.2vw, 16px);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.fh-clock {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.fh-clock-time {
+  font-size: clamp(34px, 4vw, 60px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.fh-clock-period {
+  font-size: clamp(16px, 1.6vw, 22px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+/* Compact member avatar strip (portrait only — see the portrait media query).
+   Each avatar adds an event for that member; the + badge signals the action. */
+.fh-avatar-strip {
+  display: none; /* shown only in portrait */
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.fh-avatar-chip {
+  position: relative;
+  width: clamp(38px, 6vw, 46px);
+  height: clamp(38px, 6vw, 46px);
+  padding: 0;
+  border-radius: 50%;
+  flex: none;
+}
+
+.fh-avatar-chip-img,
+.fh-avatar-chip-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  object-fit: cover;
+  background: var(--member);
+  color: #fff;
+  font-size: clamp(14px, 1.6vw, 18px);
+  font-weight: 900;
+}
+
+.fh-avatar-chip-img {
+  background: #fff;
+}
+
+.fh-avatar-chip-plus {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  border: 2px solid var(--surface);
+}
+
+/* weather glyphs */
+.wx-sun {
+  fill: #f9b21d;
+}
+.wx-rays {
+  stroke: #f9b21d;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.wx-cloud {
+  fill: #aebfd6;
+}
+.wx-rain {
+  stroke: #4f9bdc;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+/* --------------------------------------------------------------- calendar */
+.fh-calendar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.fh-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: clamp(8px, 1vw, 14px) clamp(12px, 1.4vw, 18px);
+  border-bottom: 2px solid var(--line);
+}
+
+.fh-view-switch {
+  display: inline-flex;
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 3px;
+}
+
+.fh-view-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: clamp(54px, 5.6vw, 84px);
+  padding: 5px 10px;
+  border-radius: 9px;
+  font-size: clamp(14px, 1.4vw, 18px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.fh-view-tab em {
+  font-style: normal;
+  font-size: clamp(10px, 0.95vw, 12px);
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.fh-view-tab.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(47, 111, 237, 0.32);
+}
+
+.fh-cal-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 0.8vw, 8px);
+}
+
+.fh-cal-title {
+  margin: 0;
+  min-width: clamp(108px, 12vw, 190px);
+  text-align: center;
+  font-size: clamp(16px, 1.8vw, 24px);
+  font-weight: 900;
+}
+
+.fh-nav-btn {
+  width: clamp(34px, 3.4vw, 42px);
+  height: clamp(34px, 3.4vw, 42px);
+  border-radius: 50%;
+  background: var(--bg);
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.fh-nav-btn:active {
+  background: var(--line);
+}
+
+.fh-today-btn,
+.fh-add-btn {
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 800;
+}
+
+.fh-today-btn {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.fh-add-btn {
+  background: var(--primary);
+  color: #fff;
+}
+
+.fh-cal-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: clamp(10px, 1.4vw, 18px);
+}
+
+/* ------- day view ------- */
+.fh-day {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.fh-allday {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  margin-bottom: 8px;
+  border-bottom: 2px dashed var(--line);
+}
+
+.fh-allday-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+
+.fh-allday-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fh-chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 800;
+}
+
+.fh-day-grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Keep the 6AM–10PM axis readable: never let the hour rows pack tighter than
+   ~20px apart (labels would overlap). On short screens the grid scrolls
+   instead of crushing the timeline. */
+.fh-day-hours {
+  position: relative;
+  height: max(100%, 150px);
+}
+
+.fh-hour-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(-50%);
+}
+
+.fh-hour-label {
+  width: clamp(56px, 6vw, 78px);
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-align: right;
+  flex: none;
+  /* Never wrap "10:00 AM" onto two lines — that pushes labels into each other
+     on narrow (portrait) widths. */
+  white-space: nowrap;
+}
+
+.fh-hour-line {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+}
+
+.fh-day-canvas {
+  position: absolute;
+  left: clamp(66px, 7vw, 90px);
+  right: 4px;
+  top: 0;
+  bottom: 0;
+}
+
+.fh-event-block {
+  position: absolute;
+  display: flex;
+  overflow: hidden;
+  text-align: left;
+  padding: 0;
+  border: 2px solid;
+  /* Pill shape: both ends are full semicircles so the round avatar nests into
+     the left cap. */
+  border-radius: 999px;
+  min-height: 42px;
+}
+
+.fh-event-bar {
+  width: 7px;
+  flex: none;
+}
+
+.fh-event-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  padding: 4px 14px 4px 8px;
+  min-width: 0;
+}
+
+.fh-event-body strong {
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.fh-event-title {
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fh-event-loc {
+  font-size: clamp(11px, 1.1vw, 14px);
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Member avatar fills the pill's left semicircle exactly: a stretched square
+   (height = bar height) clipped to a circle, flush against the left cap.
+   Rendered as a background image so it reliably stretches (an <img> would not). */
+.fh-event-avatar {
+  flex: none;
+  align-self: stretch;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  width: auto;
+  border-radius: 50%;
+  background-color: #fff;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+/* ------- week view ------- */
+.fh-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.fh-week-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: 12px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.fh-week-col.is-today {
+  outline: 3px solid var(--primary);
+}
+
+.fh-week-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  background: var(--surface);
+  border-bottom: 2px solid var(--line);
+}
+
+.fh-week-dow {
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+
+.fh-week-num {
+  font-size: clamp(20px, 2.1vw, 28px);
+  font-weight: 900;
+}
+
+.is-today .fh-week-num {
+  color: var(--primary);
+}
+
+.fh-week-events {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fh-week-empty {
+  margin: 8px 0 0;
+  text-align: center;
+  color: var(--line-strong);
+  font-weight: 800;
+}
+
+.fh-week-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 8px;
+  text-align: left;
+  background: var(--surface);
+  border-left: 6px solid;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(19, 26, 36, 0.08);
+}
+
+.fh-week-time {
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 900;
+}
+
+.fh-week-title {
+  font-size: clamp(12px, 1.25vw, 15px);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+/* ------- month view ------- */
+.fh-month {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.fh-month-dow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 6px;
+}
+
+.fh-month-dow-cell {
+  text-align: center;
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+
+.fh-month-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(0, 1fr);
+  gap: 5px;
+}
+
+.fh-month-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
+  padding: 5px;
+  border-radius: 9px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.fh-month-cell.is-out {
+  opacity: 0.42;
+}
+
+.fh-month-cell.is-today {
+  background: var(--primary-soft);
+  outline: 2px solid var(--primary);
+}
+
+.fh-month-num {
+  font-size: clamp(13px, 1.3vw, 17px);
+  font-weight: 900;
+}
+
+.fh-month-cell.is-today .fh-month-num {
+  color: var(--primary);
+}
+
+.fh-month-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.fh-month-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  text-align: left;
+  border-radius: 6px;
+  color: #fff;
+  font-size: clamp(10px, 1.05vw, 13px);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fh-month-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  flex: none;
+}
+
+.fh-month-more {
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+/* ---------------------------------------------------------- members rail */
+.fh-members {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.fh-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: clamp(7px, 0.9vw, 11px) clamp(12px, 1.4vw, 16px);
+  border-bottom: 2px solid var(--line);
+}
+
+.fh-panel-head h3 {
+  margin: 0;
+  font-size: clamp(16px, 1.7vw, 22px);
+  font-weight: 900;
+}
+
+.fh-panel-head span {
+  font-size: clamp(11px, 1.1vw, 14px);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.fh-members-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: clamp(5px, 0.7vw, 9px);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fh-member {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-left: 7px solid var(--member);
+  border-radius: 10px;
+  background: var(--member-soft);
+  padding: 4px 10px;
+}
+
+.fh-member-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.fh-member-avatar {
+  display: grid;
+  place-items: center;
+  width: clamp(34px, 3.4vw, 44px);
+  height: clamp(34px, 3.4vw, 44px);
+  border-radius: 50%;
+  background: var(--member);
+  color: #fff;
+  font-size: clamp(13px, 1.4vw, 16px);
+  font-weight: 900;
+  flex: none;
+}
+
+/* Real cropped photo variant (black circular frame). */
+.fh-member-avatar-img {
+  object-fit: cover;
+  background: #fff;
+  border: 2px solid var(--ink);
+}
+
+.fh-member-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  text-align: left;
+}
+
+.fh-member-name[disabled] {
+  cursor: default;
+  opacity: 1;
+}
+
+.fh-member-name strong {
+  font-size: clamp(14px, 1.4vw, 17px);
+  font-weight: 900;
+}
+
+.fh-member-name em {
+  font-style: normal;
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.fh-member-next {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fh-member-next-time {
+  font-weight: 800;
+  color: var(--member);
+}
+
+.fh-member-add {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--member);
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.fh-member-events {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.fh-member-more {
+  align-self: flex-start;
+  padding: 2px 6px;
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 800;
+  color: var(--member);
+}
+
+.fh-member-free {
+  margin: 2px 0;
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.fh-member-event {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 8px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 8px;
+}
+
+.fh-member-time {
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 900;
+  color: var(--member);
+  white-space: nowrap;
+}
+
+.fh-member-title {
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* ----------------------------------------------------------- bottom cards */
+.fh-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.fh-chore-list,
+.fh-list,
+.fh-meal-list,
+.fh-reward-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  padding: 8px 10px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* chores */
+.fh-chore {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  grid-template-areas: "check text who" "check stars stars";
+  align-items: center;
+  gap: 2px 9px;
+  width: 100%;
+  padding: 7px 9px;
+  text-align: left;
+  border-radius: 10px;
+  background: var(--bg);
+  border-left: 5px solid var(--member);
+}
+
+.fh-check {
+  grid-area: check;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 2px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.fh-chore.done .fh-check,
+.fh-list-row.done .fh-check {
+  background: var(--ok);
+  border-color: var(--ok);
+}
+
+.fh-chore-text {
+  grid-area: text;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.fh-chore.done .fh-chore-text {
+  text-decoration: line-through;
+  color: var(--ink-soft);
+}
+
+.fh-chore-who {
+  grid-area: who;
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 900;
+}
+
+.fh-chore-stars {
+  grid-area: stars;
+  font-size: clamp(11px, 1.1vw, 13px);
+  letter-spacing: 1px;
+}
+
+/* generic list rows (todo / grocery) */
+.fh-list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.fh-list-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.fh-list-text {
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 700;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fh-list-row.done .fh-list-text {
+  text-decoration: line-through;
+  color: var(--ink-soft);
+}
+
+.fh-qty {
+  margin-left: auto;
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 800;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.fh-list-del {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--ink-soft);
+  flex: none;
+}
+
+.fh-list-del:active {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.fh-add-row {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  border-top: 2px solid var(--line);
+}
+
+.fh-add-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+}
+
+.fh-mini-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 800;
+  flex: none;
+}
+
+/* meals */
+.fh-meal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 9px;
+}
+
+.fh-meal-row.is-today {
+  background: var(--primary-soft);
+}
+
+.fh-meal-day {
+  width: 42px;
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 900;
+  color: var(--ink-soft);
+  flex: none;
+}
+
+.fh-meal-row.is-today .fh-meal-day {
+  color: var(--primary);
+}
+
+.fh-meal-name {
+  flex: 1;
+  text-align: left;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 700;
+}
+
+/* rewards */
+.fh-reward-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--bg);
+  border-left: 5px solid var(--member);
+}
+
+.fh-reward-avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--member);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  flex: none;
+}
+
+.fh-reward-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.fh-reward-info strong {
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 900;
+}
+
+.fh-reward-stat {
+  font-size: clamp(10px, 1.05vw, 13px);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.fh-redeem-btn {
+  padding: 7px 12px;
+  border-radius: 9px;
+  background: var(--ok);
+  color: #fff;
+  font-size: clamp(12px, 1.2vw, 14px);
+  font-weight: 800;
+  flex: none;
+}
+
+.fh-redeem-btn:disabled {
+  background: var(--line-strong);
+  color: #fff;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ footer */
+.fh-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 8px;
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.fh-footer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.fh-footer-actions button {
+  padding: 7px 14px;
+  border-radius: 9px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------- modal */
+.fh-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(19, 26, 36, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.fh-modal {
+  width: min(560px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(19, 26, 36, 0.35);
+}
+
+.fh-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 2px solid var(--line);
+}
+
+.fh-modal-head h3 {
+  margin: 0;
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 900;
+}
+
+.fh-modal-x {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg);
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--ink-soft);
+}
+
+.fh-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+}
+
+.fh-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.fh-field > span {
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.fh-field input {
+  font-size: clamp(15px, 1.5vw, 18px);
+}
+
+.fh-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.fh-member-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fh-pick {
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--member);
+  color: var(--member);
+  background: var(--surface);
+  font-size: clamp(14px, 1.4vw, 17px);
+  font-weight: 800;
+}
+
+.fh-pick.active {
+  background: var(--member);
+  color: #fff;
+}
+
+.fh-allday-toggle {
+  align-items: flex-start;
+}
+
+.fh-allday-toggle input {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  accent-color: var(--primary);
+}
+
+.fh-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.fh-modal-actions-right {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.fh-btn-danger,
+.fh-btn-ghost,
+.fh-btn-primary {
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-size: clamp(15px, 1.5vw, 18px);
+  font-weight: 800;
+}
+
+.fh-btn-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.fh-btn-ghost {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.fh-btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* -------------------------------------------------------------- screensaver */
+.fh-screensaver {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  overflow: hidden;
+  background: #000;
+}
+
+.fh-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  /* <img> photos cover the frame; the gradient fallback uses its own bg. */
+  object-fit: cover;
+  object-position: center;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 1.4s ease;
+  transform: scale(1.02);
+  will-change: transform, opacity;
+}
+
+.fh-slide.active {
+  opacity: 1;
+}
+
+/* Apple-style Ken Burns: each active photo slowly zooms + drifts. Variants
+   alternate the direction so consecutive photos don't move the same way. */
+.fh-slide.kb0.active { animation: kb-zoom-tl 11s linear both; }
+.fh-slide.kb1.active { animation: kb-zoom-br 11s linear both; }
+.fh-slide.kb2.active { animation: kb-zoom-tr 11s linear both; }
+.fh-slide.kb3.active { animation: kb-pull-l 11s linear both; }
+
+@keyframes kb-zoom-tl {
+  from { transform: scale(1.02) translate(0, 0); }
+  to   { transform: scale(1.16) translate(-3%, -2%); }
+}
+@keyframes kb-zoom-br {
+  from { transform: scale(1.02) translate(0, 0); }
+  to   { transform: scale(1.16) translate(3%, 2%); }
+}
+@keyframes kb-zoom-tr {
+  from { transform: scale(1.02) translate(0, 0); }
+  to   { transform: scale(1.16) translate(3%, -2%); }
+}
+@keyframes kb-pull-l {
+  from { transform: scale(1.16) translate(2%, 1%); }
+  to   { transform: scale(1.02) translate(-2%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fh-slide.active { animation: none !important; }
+}
+
+.fh-slide-fallback {
+  background: linear-gradient(135deg, #243244, #51607a);
+}
+
+.fh-saver-scrim {
+  position: absolute;
+  inset: 0;
+  /* Darken the top (where the text now sits) and a touch of the bottom (hint),
+     leaving the photo's centre clear. */
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.58),
+    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0) 78%,
+    rgba(0, 0, 0, 0.4)
+  );
+}
+
+.fh-saver-next {
+  margin-top: clamp(18px, 3vh, 34px);
+  padding: 12px 22px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(4px);
+  text-align: center;
+}
+
+.fh-saver-next-label {
+  font-size: clamp(12px, 1.4vw, 16px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.fh-saver-next-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.fh-saver-next-row strong {
+  font-size: clamp(20px, 2.6vw, 34px);
+  font-weight: 900;
+}
+
+.fh-saver-next-row em {
+  font-style: normal;
+  font-size: clamp(15px, 1.8vw, 22px);
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.fh-saver-dot {
+  width: clamp(14px, 1.6vw, 20px);
+  height: clamp(14px, 1.6vw, 20px);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55);
+}
+
+/* ---------------------------------------------------------------- app nav */
+.fh-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 6px clamp(10px, 1.4vw, 16px);
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.fh-nav-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.fh-nav-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: clamp(82px, 9vw, 120px);
+  padding: 8px 14px;
+  border-radius: 11px;
+  font-size: clamp(15px, 1.6vw, 20px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.fh-nav-badge {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #e0457b;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(224, 69, 123, 0.45);
+}
+
+.fh-nav-tab em {
+  font-style: normal;
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.fh-nav-tab.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(47, 111, 237, 0.3);
+}
+
+.fh-nextup {
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 8px 18px;
+  border-left: 7px solid var(--member);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.fh-nextup-empty {
+  border-left-color: var(--line-strong);
+  opacity: 0.85;
+}
+
+.fh-nextup-label {
+  font-size: clamp(10px, 1.1vw, 13px);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--member);
+  white-space: nowrap;
+}
+
+.fh-nextup-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.fh-nextup-body strong {
+  font-size: clamp(15px, 1.6vw, 20px);
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fh-nextup-body em {
+  font-style: normal;
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 700;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------- dashboard meal summary */
+.fh-meal-summary {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: clamp(8px, 1vw, 12px);
+  overflow: hidden;
+}
+
+.fh-meal-now,
+.fh-meal-next {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fh-meal-tag {
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+
+.fh-meal-now strong {
+  font-size: clamp(16px, 1.9vw, 24px);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.fh-meal-next strong {
+  font-size: clamp(15px, 1.5vw, 19px);
+  font-weight: 800;
+}
+
+.fh-shop-pill {
+  margin-top: auto;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 900;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------- meal page */
+.fh-meal-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 26vw, 380px);
+  gap: clamp(12px, 1.6vw, 20px);
+  align-items: start;
+}
+
+.fh-meal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fh-meal-day-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fh-meal-day-head {
+  text-align: center;
+  font-size: clamp(13px, 1.4vw, 17px);
+  font-weight: 900;
+  color: var(--ink-soft);
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--line);
+}
+
+.fh-meal-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  text-align: left;
+  border-radius: 10px;
+  background: var(--bg);
+  border-left: 5px solid var(--primary);
+  min-height: 74px;
+}
+
+.fh-meal-slot-label {
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.fh-meal-slot-name {
+  font-size: clamp(12px, 1.25vw, 15px);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.fh-meal-slot-ing {
+  margin-top: auto;
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.fh-meal-grocery {
+  height: clamp(440px, 70vh, 720px);
+}
+
+.fh-meal-grocery .fh-card {
+  height: 100%;
+}
+
+/* ingredient chips (in slot editor) */
+.fh-ingredient-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-height: 20px;
+}
+
+.fh-ingredient {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 12px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: clamp(13px, 1.3vw, 15px);
+  font-weight: 800;
+}
+
+.fh-ingredient button {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(47, 111, 237, 0.18);
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.fh-src-tag {
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: clamp(9px, 0.95vw, 11px);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------- import page */
+.fh-import-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 16px;
+}
+
+.fh-import-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: var(--bg);
+  font-size: clamp(14px, 1.4vw, 18px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.fh-import-tab.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.fh-soon {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--warning, #f2a900);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.fh-import-textarea {
+  width: 100%;
+  border: 2px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 14px;
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.fh-import-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.fh-import-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border: 2px dashed var(--line-strong);
+  border-radius: 14px;
+  background: var(--bg);
+}
+
+.fh-stub {
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #fff4c7;
+  border-left: 6px solid #f2a900;
+  font-size: clamp(14px, 1.4vw, 17px);
+  font-weight: 700;
+  color: #7a5a00;
+}
+
+.fh-review {
+  margin-top: 22px;
+}
+
+.fh-review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.fh-review-head h3 {
+  margin: 0;
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 900;
+}
+
+.fh-review-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: 14px;
+}
+
+.fh-review-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.fh-review-card.is-dupe {
+  border-color: #f2a900;
+}
+
+.fh-dupe-badge {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fff4c7;
+  color: #7a5a00;
+  font-size: clamp(13px, 1.3vw, 15px);
+  font-weight: 800;
+}
+
+/* ---------------------------------------------------------- photos page */
+.fh-photos-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.fh-photos-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.fh-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.fh-photo {
+  position: relative;
+  margin: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.fh-photo img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.fh-photo figcaption {
+  padding: 8px 12px;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 800;
+}
+
+.fh-photo-tools {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.fh-fav,
+.fh-photo-del {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.fh-fav.on {
+  color: #f2a900;
+}
+
+.fh-saver-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: clamp(24px, 5vh, 64px);
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+}
+
+.fh-saver-clock {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.fh-saver-time {
+  font-size: clamp(72px, 13vw, 168px);
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.fh-saver-period {
+  font-size: clamp(24px, 4vw, 50px);
+  font-weight: 800;
+}
+
+.fh-saver-date {
+  margin: 8px 0 0;
+  font-size: clamp(20px, 2.6vw, 36px);
+  font-weight: 800;
+}
+
+.fh-saver-caption {
+  margin: 28px 0 0;
+  font-size: clamp(18px, 2.2vw, 30px);
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+.fh-saver-hint {
+  position: absolute;
+  bottom: clamp(24px, 5vh, 56px);
+  margin: 0;
+  font-size: clamp(14px, 1.6vw, 20px);
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+/* Photo location (EXIF GPS), bottom-centre. Small — sized below the date. */
+.fh-saver-place {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: clamp(20px, 4vh, 44px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+}
+
+.fh-saver-place-pin {
+  font-size: clamp(14px, 1.6vw, 19px);
+  line-height: 1.3;
+}
+
+.fh-saver-place-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.25;
+  font-size: clamp(13px, 1.5vw, 18px);
+  font-weight: 700;
+}
+
+.fh-saver-place-text span:nth-child(2) {
+  font-size: 0.85em;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* -------------------------------------------------------- small landscape */
+/* 1024x768 — let the calendar shrink to its row instead of forcing a minimum
+   (a fixed min-height here is what used to push content past the viewport). */
+@media (max-height: 800px) {
+  .fh-bottom {
+    height: clamp(180px, 26vh, 250px);
+  }
+  .fh-week,
+  .fh-month {
+    min-height: 0;
+  }
+  /* Meals card is a summary at this size: tonight + shopping count only. */
+  .fh-meal-next {
+    display: none;
+  }
+}
+
+/* Portrait-first: the page grows and scrolls naturally instead of cramming a
+   landscape dashboard into one screen. Each section gets a real height. */
+@media (orientation: portrait) {
+  .fh-app {
+    height: auto;
+    min-height: 100dvh;
+    grid-template-rows: auto auto;
+  }
+  .fh-dashboard {
+    grid-template-rows: auto auto;
+  }
+
+  /* Calendar only — the member list is replaced by the compact avatar strip
+     in the top bar (see below). */
+  .fh-main {
+    grid-template-columns: 1fr;
+  }
+  .fh-calendar {
+    min-height: 320px;
+  }
+  .fh-members {
+    display: none;
+  }
+
+  /* Panels flow into as many columns as the width allows. */
+  .fh-bottom {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    height: auto;
+  }
+
+  /* Top bar reflows to two rows so Next up / weather / clock stop colliding:
+     row 1 = brand + weather/clock, row 2 = Next up + the member avatar strip. */
+  .fh-topbar {
+    grid-template-columns: 1fr auto;
+    row-gap: 10px;
+    column-gap: 16px;
+  }
+  .fh-topbar-left {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .fh-topbar-right {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .fh-nextup {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: stretch;
+  }
+  /* The simplified "Who's doing what": avatars in the space right of Next up. */
+  .fh-avatar-strip {
+    display: flex;
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+}
+
+/* ---- Supabase loading + Gmail inbox ---- */
+.fh-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: clamp(20px, 3vw, 32px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.fh-inbox {
+  border: 2px solid #e0457b;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  background: #fdeef4;
+}
+
+.fh-inbox .fh-review-head h3 {
+  color: #b51e5b;
+}
+
+/* ---- PIN gate (public access lock) ---- */
+.fh-pin-root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: var(--bg);
+}
+
+.fh-pin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 36px 40px;
+  min-width: 300px;
+}
+
+.fh-pin-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.fh-pin-sub {
+  font-size: 18px;
+  color: var(--ink-soft);
+}
+
+.fh-pin-input {
+  width: 220px;
+  text-align: center;
+  font-size: 34px;
+  letter-spacing: 12px;
+  font-weight: 700;
+  padding: 10px 12px;
+  border: 2px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.fh-pin-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.fh-pin-input-err {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.fh-pin-err {
+  color: var(--danger);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.fh-pin-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--primary);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.fh-pin-btn:active {
+  transform: translateY(1px);
+}
+
+/* ---- Gear / settings menu (replaces nav row + footer) ---- */
+.fh-gear {
+  position: relative;
+}
+
+.fh-gear-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(40px, 4vw, 50px);
+  height: clamp(40px, 4vw, 50px);
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.fh-gear-btn:hover {
+  color: var(--primary);
+  border-color: var(--line-strong);
+}
+
+.fh-gear-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(224, 69, 123, 0.45);
+}
+
+.fh-gear-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 60;
+  min-width: 240px;
+  padding: 8px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.fh-gear-section {
+  padding: 6px 10px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.fh-gear-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: none;
+  border: none;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.fh-gear-item em {
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.fh-gear-item:hover {
+  background: var(--bg);
+}
+
+.fh-gear-item.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.fh-gear-item.active em {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.fh-gear-item-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+}
+
+.fh-gear-divider {
+  height: 2px;
+  margin: 6px 4px;
+  background: var(--line);
+}
+
+/* ---- Mail bell (right of the logo) ---- */
+.fh-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(40px, 4vw, 50px);
+  height: clamp(40px, 4vw, 50px);
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.fh-bell:hover {
+  color: var(--primary);
+  border-color: var(--line-strong);
+}
+
+/* Bell lights up when there are new email items waiting. */
+.fh-bell.has-news {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.fh-bell-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(224, 69, 123, 0.45);
+}
+
+/* ---- Email-import: empty state + optional manual section ---- */
+.fh-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: clamp(24px, 4vw, 48px) 20px;
+  margin: 8px 0 18px;
+  background: var(--bg);
+  border-radius: var(--radius);
+}
+
+.fh-empty-icon {
+  font-size: clamp(40px, 6vw, 64px);
+}
+
+.fh-empty strong {
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 900;
+}
+
+.fh-empty p {
+  margin: 0;
+  max-width: 36em;
+  font-size: clamp(14px, 1.4vw, 18px);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.fh-manual {
+  margin-top: 8px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 4px 16px;
+}
+
+.fh-manual > summary {
+  padding: 12px 4px;
+  font-size: clamp(15px, 1.5vw, 18px);
+  font-weight: 800;
+  color: var(--ink-soft);
+  cursor: pointer;
+  list-style: revert;
+}
+
+.fh-manual[open] > summary {
+  color: var(--ink);
+}
+
+/* Location badge under a photo on the Photos page. */
+.fh-photo-place {
+  display: block;
+  margin-top: 2px;
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000">
+  <defs>
+    <linearGradient id="park" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bdeefc"/>
+      <stop offset="1" stop-color="#e9fbe7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#park)"/>
+  <circle cx="1320" cy="200" r="84" fill="#fff3b0"/>
+  <rect x="0" y="700" width="1600" height="300" fill="#79c267"/>
+  <ellipse cx="500" cy="700" rx="240" ry="120" fill="#4ea64f"/>
+  <rect x="470" y="700" width="60" height="180" fill="#7a5230"/>
+  <ellipse cx="1080" cy="720" rx="200" ry="110" fill="#56b25a"/>
+  <rect x="1055" y="720" width="50" height="160" fill="#7a5230"/>
+  <text x="60" y="940" font-family="Inter, sans-serif" font-size="44" font-weight="800" fill="#2f6b34" opacity="0.9">Park Picnic</text>
+</svg>
