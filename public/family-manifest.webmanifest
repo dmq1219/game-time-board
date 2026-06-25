@@ -2,7 +2,7 @@
   "name": "Family Hub · 家庭中控",
   "short_name": "Family Hub",
   "description": "Offline-first family command center: calendar, chores, lists, meal plan, and screen-time rewards.",
-  "start_url": "./family.html",
+  "start_url": "./family/",
   "scope": ".",
   "display": "standalone",
   "orientation": "landscape",
