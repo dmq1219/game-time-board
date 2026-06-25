@@ -34,7 +34,8 @@ export default function Screensaver({ now, photos, members, nextEvt, onWake }) {
       {ordered.map((p, i) => (
         <div
           key={p.id}
-          className={`fh-slide${i === safeIndex ? " active" : ""}`}
+          // kb0..3 give each photo a different slow zoom/pan direction.
+          className={`fh-slide kb${i % 4}${i === safeIndex ? " active" : ""}`}
           style={{ backgroundImage: `url(${p.src})` }}
         />
       ))}

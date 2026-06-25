@@ -1394,10 +1394,40 @@ button:focus-visible {
   background-size: cover;
   background-position: center;
   transition: opacity 1.4s ease;
+  transform: scale(1.02);
+  will-change: transform, opacity;
 }
 
 .fh-slide.active {
   opacity: 1;
+}
+
+/* Apple-style Ken Burns: each active photo slowly zooms + drifts. Variants
+   alternate the direction so consecutive photos don't move the same way. */
+.fh-slide.kb0.active { animation: kb-zoom-tl 11s linear both; }
+.fh-slide.kb1.active { animation: kb-zoom-br 11s linear both; }
+.fh-slide.kb2.active { animation: kb-zoom-tr 11s linear both; }
+.fh-slide.kb3.active { animation: kb-pull-l 11s linear both; }
+
+@keyframes kb-zoom-tl {
+  from { transform: scale(1.02) translate(0, 0); }
+  to   { transform: scale(1.16) translate(-3%, -2%); }
+}
+@keyframes kb-zoom-br {
+  from { transform: scale(1.02) translate(0, 0); }
+  to   { transform: scale(1.16) translate(3%, 2%); }
+}
+@keyframes kb-zoom-tr {
+  from { transform: scale(1.02) translate(0, 0); }
+  to   { transform: scale(1.16) translate(3%, -2%); }
+}
+@keyframes kb-pull-l {
+  from { transform: scale(1.16) translate(2%, 1%); }
+  to   { transform: scale(1.02) translate(-2%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fh-slide.active { animation: none !important; }
 }
 
 .fh-slide-fallback {
@@ -1407,7 +1437,15 @@ button:focus-visible {
 .fh-saver-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.05) 38%, rgba(0, 0, 0, 0.5));
+  /* Darken the top (where the text now sits) and a touch of the bottom (hint),
+     leaving the photo's centre clear. */
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.58),
+    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0) 78%,
+    rgba(0, 0, 0, 0.4)
+  );
 }
 
 .fh-saver-next {
@@ -1912,10 +1950,11 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-top: clamp(24px, 5vh, 64px);
   text-align: center;
   color: #fff;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
 }
 
 .fh-saver-clock {
@@ -1925,20 +1964,20 @@ button:focus-visible {
 }
 
 .fh-saver-time {
-  font-size: clamp(96px, 18vw, 220px);
+  font-size: clamp(72px, 13vw, 168px);
   font-weight: 900;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .fh-saver-period {
-  font-size: clamp(30px, 5vw, 60px);
+  font-size: clamp(24px, 4vw, 50px);
   font-weight: 800;
 }
 
 .fh-saver-date {
-  margin: 12px 0 0;
-  font-size: clamp(22px, 3vw, 40px);
+  margin: 8px 0 0;
+  font-size: clamp(20px, 2.6vw, 36px);
   font-weight: 800;
 }
 
