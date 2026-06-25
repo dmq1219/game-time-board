@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { supabase, hasSupabase } from "../lib/supabase";
+import {
+  supabase,
+  hasSupabase,
+  uploadPhotoDataUrl,
+  resolvePhotoSrc,
+  deletePhotoObject
+} from "../lib/supabase";
 import {
   MAPPERS,
   rewardsFromRows,
@@ -30,6 +36,40 @@ async function run(promise, label) {
   const { error } = await promise;
   if (error) console.error(`[familyHub] ${label} failed:`, error.message);
   return !error;
+}
+
+const PHOTO_PAGE_SIZE = 8;
+
+async function fetchPhotosPaged() {
+  const rows = [];
+
+  for (let from = 0; ; from += PHOTO_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("photos")
+      .select("*")
+      .order("id")
+      .range(from, from + PHOTO_PAGE_SIZE - 1);
+
+    if (error) {
+      console.error("[familyHub] fetch photos failed:", error.message);
+      break;
+    }
+
+    rows.push(...(data || []));
+    if (!data || data.length < PHOTO_PAGE_SIZE) break;
+  }
+
+  return rows;
+}
+
+async function hydratePhotoRows(rows, places) {
+  return Promise.all(
+    rows.map(async (row) => {
+      const p = MAPPERS.photos.fromRow(row);
+      const src = await resolvePhotoSrc(p.src);
+      return places[p.id] ? { ...p, src, place: places[p.id] } : { ...p, src };
+    })
+  );
 }
 
 // Insert the seed data into an empty database. Guarded so concurrent mounts
@@ -85,6 +125,7 @@ export function useFamilyData() {
   // re-creating themselves on every change.
   const stateRef = useRef({});
   stateRef.current = { members, events, chores, todos, grocery, meals, photos, rewards, settings };
+  const persist = hasSupabase;
 
   // Pull the whole hub from Supabase and replace local state with DB truth.
   // Used on mount and on a periodic timer as a self-healing safety net (so a
@@ -98,7 +139,6 @@ export function useFamilyData() {
       todosRes,
       groceryRes,
       mealsRes,
-      photosRes,
       rewardsRes,
       settingsRes,
       candidatesRes
@@ -109,7 +149,6 @@ export function useFamilyData() {
       supabase.from("todos").select("*"),
       supabase.from("grocery").select("*"),
       supabase.from("meals").select("*").order("day"),
-      supabase.from("photos").select("*"),
       supabase.from("rewards").select("*"),
       supabase.from("settings").select("value").eq("key", SETTINGS_KEY).maybeSingle(),
       supabase.from("import_candidates").select("*").eq("status", "pending")
@@ -124,12 +163,8 @@ export function useFamilyData() {
     setMeals((mealsRes.data || []).map(MAPPERS.meals.fromRow));
     const loadedSettings = settingsRes.data?.value || DEFAULT_SETTINGS;
     const places = loadedSettings.photoPlaces || {};
-    setPhotos(
-      (photosRes.data || []).map((r) => {
-        const p = MAPPERS.photos.fromRow(r);
-        return places[p.id] ? { ...p, place: places[p.id] } : p;
-      })
-    );
+    const photoRows = await fetchPhotosPaged();
+    setPhotos(await hydratePhotoRows(photoRows, places));
     setRewards(rewardsFromRows(rewardsRes.data));
     setSettings(loadedSettings);
     setCandidates((candidatesRes.data || []).map(MAPPERS.import_candidates.fromRow));
@@ -181,6 +216,34 @@ export function useFamilyData() {
     return () => clearInterval(id);
   }, [fetchAll]);
 
+  useEffect(() => {
+    if (!persist || !ready) return undefined;
+
+    let cancelled = false;
+    (async () => {
+      // ponytail: migrate legacy base64 rows in place so cross-device fetches shrink over time.
+      for (const photo of stateRef.current.photos) {
+        if (cancelled || typeof photo.src !== "string" || !photo.src.startsWith("data:")) continue;
+
+        const storageSrc = await uploadPhotoDataUrl(photo.id, photo.src);
+        if (!storageSrc) break;
+        const resolvedSrc = await resolvePhotoSrc(storageSrc);
+
+        setPhotos((prev) =>
+          prev.map((p) => (p.id === photo.id ? { ...p, src: resolvedSrc } : p))
+        );
+        await run(
+          supabase.from("photos").update({ src: storageSrc }).eq("id", photo.id),
+          "migrate photo"
+        );
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [persist, ready]);
+
   // ---- Realtime ----
   useEffect(() => {
     if (!hasSupabase) return;
@@ -190,7 +253,6 @@ export function useFamilyData() {
       todos: [setTodos, MAPPERS.todos.fromRow],
       grocery: [setGrocery, MAPPERS.grocery.fromRow],
       meals: [setMeals, MAPPERS.meals.fromRow],
-      photos: [setPhotos, MAPPERS.photos.fromRow],
       family_members: [setMembers, MAPPERS.family_members.fromRow]
     };
 
@@ -206,6 +268,18 @@ export function useFamilyData() {
       });
     }
 
+    channel.on("postgres_changes", { event: "*", schema: "public", table: "photos" }, async (payload) => {
+      if (payload.eventType === "DELETE") {
+        setPhotos((prev) => removeFrom(prev, payload.old.id));
+        return;
+      }
+
+      const p = MAPPERS.photos.fromRow(payload.new);
+      const src = await resolvePhotoSrc(p.src);
+      const place = stateRef.current.settings?.photoPlaces?.[p.id];
+      setPhotos((prev) => upsertInto(prev, place ? { ...p, src, place } : { ...p, src }));
+    });
+
     channel.on("postgres_changes", { event: "*", schema: "public", table: "rewards" }, (payload) => {
       if (payload.eventType === "DELETE") return;
       const r = payload.new;
@@ -216,7 +290,11 @@ export function useFamilyData() {
     });
 
     channel.on("postgres_changes", { event: "*", schema: "public", table: "settings" }, (payload) => {
-      if (payload.new?.key === SETTINGS_KEY) setSettings(payload.new.value);
+      if (payload.new?.key !== SETTINGS_KEY) return;
+      const next = payload.new.value;
+      setSettings(next);
+      const places = next?.photoPlaces || {};
+      setPhotos((prev) => prev.map((p) => (places[p.id] ? { ...p, place: places[p.id] } : p)));
     });
 
     channel.on(
@@ -241,7 +319,6 @@ export function useFamilyData() {
   }, []);
 
   // ---- CRUD (optimistic local update + Supabase write) ----
-  const persist = hasSupabase;
 
   const saveEvent = useCallback((evt) => {
     const full = { ...evt, id: evt.id || newId("evt") };
@@ -321,11 +398,20 @@ export function useFamilyData() {
   }, [persist]);
 
   const photoApi = {
-    add: useCallback((src, name, place = null) => {
+    add: useCallback(async (src, name, place = null) => {
       const p = { id: newId("photo"), src, name: name || "Photo", favorite: false, place };
       setPhotos((prev) => [...prev, p]);
       if (persist) {
-        run(supabase.from("photos").insert(MAPPERS.photos.toRow(p)), "add photo");
+        let storedSrc = src;
+        const storageSrc = await uploadPhotoDataUrl(p.id, src);
+        if (storageSrc) {
+          storedSrc = await resolvePhotoSrc(storageSrc);
+          setPhotos((prev) => prev.map((photo) => (photo.id === p.id ? { ...photo, src: storedSrc } : photo)));
+        }
+        run(
+          supabase.from("photos").insert(MAPPERS.photos.toRow({ ...p, src: storageSrc || src })),
+          "add photo"
+        );
         if (place) {
           // Store the location in the shared settings blob so it SYNCS to the
           // kiosk (no photos-table schema change needed).
@@ -337,8 +423,12 @@ export function useFamilyData() {
       }
     }, [persist]),
     remove: useCallback((id) => {
+      const cur = stateRef.current.photos.find((p) => p.id === id);
       setPhotos((prev) => removeFrom(prev, id));
-      if (persist) run(supabase.from("photos").delete().eq("id", id), "remove photo");
+      if (persist) {
+        run(supabase.from("photos").delete().eq("id", id), "remove photo");
+        if (cur) deletePhotoObject(cur.src);
+      }
     }, [persist]),
     toggleFavorite: useCallback((id) => {
       const cur = stateRef.current.photos.find((p) => p.id === id);
@@ -400,6 +490,7 @@ export function useFamilyData() {
 
   const resetDemo = useCallback(async () => {
     const seed = buildSeedData();
+    const currentPhotos = stateRef.current.photos.slice();
     setEvents(seed.events);
     setChores(seed.chores);
     setTodos(seed.todos);
@@ -412,6 +503,7 @@ export function useFamilyData() {
     );
     setRewards(freshRewards);
     if (!persist) return;
+    await Promise.all(currentPhotos.map((photo) => deletePhotoObject(photo.src)));
     // Wipe then reseed (delete-all via a never-null filter).
     const tables = ["events", "chores", "todos", "grocery", "meals", "photos"];
     await Promise.all(
