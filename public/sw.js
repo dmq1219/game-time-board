@@ -1,7 +1,7 @@
 // Service worker for both entries (index.html + family.html).
 // App shell is precached resiliently (a single missing file can't abort install);
 // hashed Vite assets are cached at runtime on first fetch.
-const CACHE_NAME = "game-time-board-v10";
+const CACHE_NAME = "game-time-board-v11";
 const APP_SHELL = [
   "./",
   "./index.html",

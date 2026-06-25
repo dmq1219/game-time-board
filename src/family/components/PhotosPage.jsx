@@ -29,10 +29,14 @@ export default function PhotosPage({ photos, onAdd, onDelete, onToggleFavorite, 
   const inputRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
 
   const handleFiles = async (files) => {
     setError("");
+    setInfo("");
     setBusy(true);
+    let added = 0;
+    let located = 0;
     try {
       for (const file of Array.from(files)) {
         if (!file.type.startsWith("image/")) continue;
@@ -45,9 +49,18 @@ export default function PhotosPage({ photos, onAdd, onDelete, onToggleFavorite, 
         // eslint-disable-next-line no-await-in-loop
         const src = await fileToDataUrl(file);
         onAdd(src, file.name.replace(/\.[^.]+$/, ""), place);
+        added += 1;
+        if (place) located += 1;
+      }
+      if (added) {
+        setInfo(
+          located
+            ? `已添加 ${added} 张,其中 ${located} 张读到了拍摄地点 📍`
+            : `已添加 ${added} 张。没读到拍摄地点 —— 这些照片可能没有 GPS 信息(截图/网图/已抹除定位的都没有);iPhone 照片请用 JPG 而非 HEIC。`
+        );
       }
     } catch {
-      setError("Could not read that image. Try a smaller JPG or PNG.");
+      setError("这张图读不了。HEIC 格式在多数浏览器无法处理,请改用 JPG 或 PNG。");
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -82,13 +95,19 @@ export default function PhotosPage({ photos, onAdd, onDelete, onToggleFavorite, 
       </div>
 
       {error && <p className="fh-error">{error}</p>}
+      {info && <p className="fh-info">{info}</p>}
 
       <div className="fh-photo-grid">
         {photos.length === 0 && <p className="fh-muted">No photos yet — upload some to start the frame.</p>}
         {photos.map((p) => (
           <figure key={p.id} className="fh-photo">
             <img src={p.src} alt={p.name} loading="lazy" />
-            <figcaption>{p.name}</figcaption>
+            <figcaption>
+              {p.name}
+              {p.place && (
+                <span className="fh-photo-place">📍 {p.place.en || p.place.zh}</span>
+              )}
+            </figcaption>
             <div className="fh-photo-tools">
               <button
                 type="button"

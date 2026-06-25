@@ -6,7 +6,6 @@ import {
   rewardToRow,
   SETTINGS_KEY
 } from "../lib/mappers";
-import { loadPlaces, savePlace } from "../lib/photoPlaces";
 import {
   FAMILY_MEMBERS,
   DEFAULT_SETTINGS,
@@ -123,7 +122,8 @@ export function useFamilyData() {
     setTodos((todosRes.data || []).map(MAPPERS.todos.fromRow));
     setGrocery((groceryRes.data || []).map(MAPPERS.grocery.fromRow));
     setMeals((mealsRes.data || []).map(MAPPERS.meals.fromRow));
-    const places = loadPlaces();
+    const loadedSettings = settingsRes.data?.value || DEFAULT_SETTINGS;
+    const places = loadedSettings.photoPlaces || {};
     setPhotos(
       (photosRes.data || []).map((r) => {
         const p = MAPPERS.photos.fromRow(r);
@@ -131,7 +131,7 @@ export function useFamilyData() {
       })
     );
     setRewards(rewardsFromRows(rewardsRes.data));
-    setSettings(settingsRes.data?.value || DEFAULT_SETTINGS);
+    setSettings(loadedSettings);
     setCandidates((candidatesRes.data || []).map(MAPPERS.import_candidates.fromRow));
   }, []);
 
@@ -323,9 +323,18 @@ export function useFamilyData() {
   const photoApi = {
     add: useCallback((src, name, place = null) => {
       const p = { id: newId("photo"), src, name: name || "Photo", favorite: false, place };
-      savePlace(p.id, place);
       setPhotos((prev) => [...prev, p]);
-      if (persist) run(supabase.from("photos").insert(MAPPERS.photos.toRow(p)), "add photo");
+      if (persist) {
+        run(supabase.from("photos").insert(MAPPERS.photos.toRow(p)), "add photo");
+        if (place) {
+          // Store the location in the shared settings blob so it SYNCS to the
+          // kiosk (no photos-table schema change needed).
+          const cur = stateRef.current.settings || {};
+          const next = { ...cur, photoPlaces: { ...(cur.photoPlaces || {}), [p.id]: place } };
+          setSettings(next);
+          run(supabase.from("settings").upsert({ key: SETTINGS_KEY, value: next }), "save photo place");
+        }
+      }
     }, [persist]),
     remove: useCallback((id) => {
       setPhotos((prev) => removeFrom(prev, id));

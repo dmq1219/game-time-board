@@ -4,7 +4,7 @@ import { memberById } from "../data/familyData";
 
 // Full-screen digital photo frame. Auto-rotates the family photo list and
 // overlays the time, date, and the next important event. Tap anywhere to exit.
-export default function Screensaver({ now, photos, members, nextEvt, onWake }) {
+export default function Screensaver({ now, photos, members, nextEvt, onWake, places }) {
   const [index, setIndex] = useState(0);
   const { time, period } = formatClock(now);
 
@@ -20,7 +20,8 @@ export default function Screensaver({ now, photos, members, nextEvt, onWake }) {
 
   const safeIndex = count ? index % count : 0;
   const member = nextEvt ? memberById(members, nextEvt.memberId) : null;
-  const place = count ? ordered[safeIndex]?.place : null;
+  const activePhoto = count ? ordered[safeIndex] : null;
+  const place = activePhoto ? activePhoto.place || places?.[activePhoto.id] : null;
 
   return (
     <div

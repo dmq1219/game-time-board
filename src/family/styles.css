@@ -2423,3 +2423,15 @@ button:focus-visible {
 .fh-manual[open] > summary {
   color: var(--ink);
 }
+
+/* Location badge under a photo on the Photos page. */
+.fh-photo-place {
+  display: block;
+  margin-top: 2px;
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

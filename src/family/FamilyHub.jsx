@@ -85,7 +85,14 @@ export default function FamilyHub() {
 
   if (idle) {
     return (
-      <Screensaver now={now} photos={photos} members={members} nextEvt={nextEvt} onWake={wake} />
+      <Screensaver
+        now={now}
+        photos={photos}
+        members={members}
+        nextEvt={nextEvt}
+        onWake={wake}
+        places={settings.photoPlaces}
+      />
     );
   }
 
