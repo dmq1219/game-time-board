@@ -1,5 +1,8 @@
 import React, { useRef, useState } from "react";
-import { readGps, reverseGeocode } from "../lib/exifGps";
+import { reverseGeocode } from "../lib/exifGps";
+
+const isHeic = (file) =>
+  /image\/hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
 
 // Downscale an uploaded image to keep localStorage small (it has a ~5 MB cap).
 function fileToDataUrl(file, maxDim = 1280) {
@@ -38,16 +41,35 @@ export default function PhotosPage({ photos, onAdd, onDelete, onToggleFavorite, 
     let added = 0;
     let located = 0;
     try {
-      for (const file of Array.from(files)) {
-        if (!file.type.startsWith("image/")) continue;
-        // Read GPS from the ORIGINAL file (downscaling drops EXIF), then
-        // reverse-geocode to a place label. Both are best-effort.
-        // eslint-disable-next-line no-await-in-loop
-        const gps = await readGps(file);
+      const list = Array.from(files).filter((f) => f.type.startsWith("image/") || isHeic(f));
+      for (const file of list) {
+        // Read GPS from the ORIGINAL file. exifr handles JPEG AND HEIC (iPhone).
+        let gps = null;
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const exifr = (await import("exifr")).default;
+          // eslint-disable-next-line no-await-in-loop
+          const g = await exifr.gps(file);
+          if (g && isFinite(g.latitude) && isFinite(g.longitude)) {
+            gps = { lat: g.latitude, lon: g.longitude };
+          }
+        } catch {
+          /* no readable EXIF — fine */
+        }
         // eslint-disable-next-line no-await-in-loop
         const place = gps ? await reverseGeocode(gps.lat, gps.lon) : null;
+
+        // <canvas> can't decode HEIC on most browsers — convert to JPEG first.
+        // heic-to uses a current libheif that handles iPhone HEIC.
+        let imgFile = file;
+        if (isHeic(file)) {
+          // eslint-disable-next-line no-await-in-loop
+          const { heicTo } = await import("heic-to");
+          // eslint-disable-next-line no-await-in-loop
+          imgFile = await heicTo({ blob: file, type: "image/jpeg", quality: 0.9 });
+        }
         // eslint-disable-next-line no-await-in-loop
-        const src = await fileToDataUrl(file);
+        const src = await fileToDataUrl(imgFile);
         onAdd(src, file.name.replace(/\.[^.]+$/, ""), place);
         added += 1;
         if (place) located += 1;
@@ -56,11 +78,11 @@ export default function PhotosPage({ photos, onAdd, onDelete, onToggleFavorite, 
         setInfo(
           located
             ? `已添加 ${added} 张,其中 ${located} 张读到了拍摄地点 📍`
-            : `已添加 ${added} 张。没读到拍摄地点 —— 这些照片可能没有 GPS 信息(截图/网图/已抹除定位的都没有);iPhone 照片请用 JPG 而非 HEIC。`
+            : `已添加 ${added} 张。这些照片里没有 GPS 定位信息(截图、网图,或拍照时没开定位)。`
         );
       }
     } catch {
-      setError("这张图读不了。HEIC 格式在多数浏览器无法处理,请改用 JPG 或 PNG。");
+      setError("有照片处理失败了,请重试或换一张。");
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -86,7 +108,7 @@ export default function PhotosPage({ photos, onAdd, onDelete, onToggleFavorite, 
           <input
             ref={inputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             multiple
             hidden
             onChange={(e) => handleFiles(e.target.files)}
