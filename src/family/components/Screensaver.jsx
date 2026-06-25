@@ -18,6 +18,25 @@ export default function Screensaver({ now, photos, members, nextEvt, onWake, pla
     return () => clearInterval(id);
   }, [count]);
 
+  // 5s after the screensaver opens, go fullscreen (hides the browser chrome).
+  // Browsers only allow this with a recent user gesture, so it works when the
+  // saver was opened via the "Photo mode" button; on idle it may be blocked.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (document.fullscreenElement || document.webkitFullscreenElement) return;
+      const el = document.documentElement;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) {
+        try {
+          Promise.resolve(req.call(el)).catch(() => {});
+        } catch {
+          /* fullscreen blocked (no user gesture) — ignore */
+        }
+      }
+    }, 5000);
+    return () => clearTimeout(t);
+  }, []);
+
   const safeIndex = count ? index % count : 0;
   const member = nextEvt ? memberById(members, nextEvt.memberId) : null;
   const activePhoto = count ? ordered[safeIndex] : null;
