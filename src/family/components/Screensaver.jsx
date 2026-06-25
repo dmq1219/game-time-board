@@ -20,6 +20,7 @@ export default function Screensaver({ now, photos, members, nextEvt, onWake }) {
 
   const safeIndex = count ? index % count : 0;
   const member = nextEvt ? memberById(members, nextEvt.memberId) : null;
+  const place = count ? ordered[safeIndex]?.place : null;
 
   return (
     <div
@@ -68,6 +69,16 @@ export default function Screensaver({ now, photos, members, nextEvt, onWake }) {
 
         <p className="fh-saver-hint">Tap anywhere to return · 轻触返回</p>
       </div>
+
+      {place && (place.en || place.zh) && (
+        <div className="fh-saver-place">
+          <span className="fh-saver-place-pin" aria-hidden="true">📍</span>
+          <span className="fh-saver-place-text">
+            {place.en && <span>{place.en}</span>}
+            {place.zh && place.zh !== place.en && <span>{place.zh}</span>}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

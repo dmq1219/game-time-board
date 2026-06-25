@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { readGps, reverseGeocode } from "../lib/exifGps";
 
 // Downscale an uploaded image to keep localStorage small (it has a ~5 MB cap).
 function fileToDataUrl(file, maxDim = 1280) {
@@ -35,9 +36,15 @@ export default function PhotosPage({ photos, onAdd, onDelete, onToggleFavorite, 
     try {
       for (const file of Array.from(files)) {
         if (!file.type.startsWith("image/")) continue;
+        // Read GPS from the ORIGINAL file (downscaling drops EXIF), then
+        // reverse-geocode to a place label. Both are best-effort.
+        // eslint-disable-next-line no-await-in-loop
+        const gps = await readGps(file);
+        // eslint-disable-next-line no-await-in-loop
+        const place = gps ? await reverseGeocode(gps.lat, gps.lon) : null;
         // eslint-disable-next-line no-await-in-loop
         const src = await fileToDataUrl(file);
-        onAdd(src, file.name.replace(/\.[^.]+$/, ""));
+        onAdd(src, file.name.replace(/\.[^.]+$/, ""), place);
       }
     } catch {
       setError("Could not read that image. Try a smaller JPG or PNG.");

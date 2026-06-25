@@ -6,6 +6,7 @@ import {
   rewardToRow,
   SETTINGS_KEY
 } from "../lib/mappers";
+import { loadPlaces, savePlace } from "../lib/photoPlaces";
 import {
   FAMILY_MEMBERS,
   DEFAULT_SETTINGS,
@@ -122,7 +123,13 @@ export function useFamilyData() {
     setTodos((todosRes.data || []).map(MAPPERS.todos.fromRow));
     setGrocery((groceryRes.data || []).map(MAPPERS.grocery.fromRow));
     setMeals((mealsRes.data || []).map(MAPPERS.meals.fromRow));
-    setPhotos((photosRes.data || []).map(MAPPERS.photos.fromRow));
+    const places = loadPlaces();
+    setPhotos(
+      (photosRes.data || []).map((r) => {
+        const p = MAPPERS.photos.fromRow(r);
+        return places[p.id] ? { ...p, place: places[p.id] } : p;
+      })
+    );
     setRewards(rewardsFromRows(rewardsRes.data));
     setSettings(settingsRes.data?.value || DEFAULT_SETTINGS);
     setCandidates((candidatesRes.data || []).map(MAPPERS.import_candidates.fromRow));
@@ -314,8 +321,9 @@ export function useFamilyData() {
   }, [persist]);
 
   const photoApi = {
-    add: useCallback((src, name) => {
-      const p = { id: newId("photo"), src, name: name || "Photo", favorite: false };
+    add: useCallback((src, name, place = null) => {
+      const p = { id: newId("photo"), src, name: name || "Photo", favorite: false, place };
+      savePlace(p.id, place);
       setPhotos((prev) => [...prev, p]);
       if (persist) run(supabase.from("photos").insert(MAPPERS.photos.toRow(p)), "add photo");
     }, [persist]),
